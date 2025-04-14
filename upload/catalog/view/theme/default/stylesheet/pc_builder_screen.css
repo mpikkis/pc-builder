@@ -1,0 +1,106 @@
+/* main.css */
+body {
+  color: #000;
+  background-color: #fff;
+}
+.main {
+  padding-right: 15px;
+  padding-left: 15px;
+  margin-right: auto;
+  margin-left: auto;
+}
+@media (min-width: 768px) {
+  .main {
+    width: 750px;
+  }
+}
+@media (min-width: 992px) {
+  .main {
+    width: 970px;
+  }
+}
+@media (min-width: 1200px) {
+  .main {
+    width: 1170px;
+  }
+}
+.clearfix::after {
+  content: "";
+  clear: both;
+  display: table;
+}
+.printarea {
+	border:  1px solid #000;
+	padding:  15px 15px;
+}
+.printarea .logo {
+	text-align: center;
+}
+.printarea .company {
+	text-align: center;
+}
+.printarea .separator-horizontal {
+	border-bottom: 1px solid #dadada;
+	margin:  15px 0;
+}
+small,
+.small {
+  font-size: 85%;
+}
+/* PC Builder Styles */
+#extension-pc-builder-pc-builder {
+
+}
+#extension-pc-builder-pc-builder .pc-builder-container {
+	border: 1px solid #dadada;
+	padding: 15px 15px;
+}
+#extension-pc-builder-pc-builder .pc-builder-container h1 {
+	margin: 0px 0px 30px 0px;
+	padding: 0 0;
+}
+#extension-pc-builder-pc-builder .pc-builder-container .pc-builder-category-container {
+	margin: 0px 0px 10px 0px;
+}
+#extension-pc-builder-pc-builder .pc-builder-container .pc-builder-category-container h4 {
+	margin: 0px 0px 10px 0px;
+	padding: 0 0;
+}
+#extension-pc-builder-pc-builder .pc-builder-container .pc-builder-category-container .pc-builder-component-container {
+	border: 1px solid #dadada;
+	background-color: #fafafa;
+	padding: 10px 15px;
+	margin-bottom: 5px;
+}
+#extension-pc-builder-pc-builder .pc-builder-container .pc-builder-category-container .pc-builder-component-container::after {
+  content: "";
+  clear: both;
+  display: table;
+}
+#extension-pc-builder-pc-builder .pc-builder-container .pc-builder-category-container .pc-builder-component-container .component-image {
+	float: left;
+}
+#extension-pc-builder-pc-builder .pc-builder-container .pc-builder-category-container .pc-builder-component-container .component-image .thumbnail {
+	margin-bottom: 0px;
+}
+#extension-pc-builder-pc-builder .pc-builder-container .pc-builder-category-container .pc-builder-component-container .component-name {
+	float: left;
+	padding: 10px 16px;
+	font-size: 15px;
+	font-weight: bold;
+}
+#extension-pc-builder-pc-builder .pc-builder-container .pc-builder-category-container .pc-builder-component-container .component-product {
+	float: left;
+	padding: 10px 16px;
+	font-size: 15px;
+}
+#extension-pc-builder-pc-builder .pc-builder-container .pc-builder-category-container .pc-builder-component-container .component-price {
+	float: right;
+	padding: 10px 16px;
+	font-size: 15px;
+	font-weight: bold;
+}
+#extension-pc-builder-pc-builder .pc-builder-container .pc-builder-category-container .pc-builder-component-container .component-choose {
+	float: right;
+}
+

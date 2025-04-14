@@ -1,0 +1,2635 @@
+<?xml version="1.0" encoding="utf-8"?>
+<modification>
+  <name>THE NEW PC BUILDER</name>
+  <version>1.0.9 TEST</version>
+  <author>Buka Usaha Online</author>
+  <link>http://www.bukausahaonline.com</link>
+	<code>buo-pc-builder-new-mod-01</code>
+<!-- ADMIN - CONTROLLER [START] -->
+  <!-- common/column_left [START] -->
+  <file path="admin/controller/common/column_left.php">
+    <operation>
+      <search><![CDATA[
+      // Catalog
+      ]]></search>
+      <add position="before"><![CDATA[
+			// PC Builder
+			$pc_builder = array();
+			
+			if ($this->user->hasPermission('access', 'extension/pc_builder/pc_builder_category')) {
+				$pc_builder[] = array(
+					'name'	   => $this->language->get('text_pc_builder_categories'),
+					'href'     => $this->url->link('extension/pc_builder/pc_builder_category', 'user_token=' . $this->session->data['user_token'], true),
+					'children' => array()		
+				);
+			}
+			
+			if ($this->user->hasPermission('access', 'extension/pc_builder/pc_builder_component')) {
+				$pc_builder[] = array(
+					'name'	   => $this->language->get('text_pc_builder_components'),
+					'href'     => $this->url->link('extension/pc_builder/pc_builder_component', 'user_token=' . $this->session->data['user_token'], true),
+					'children' => array()		
+				);
+			}
+
+			if ($pc_builder) {
+				$data['menus'][] = array(
+					'id'       => 'menu-pc-builder',
+					'icon'	   => 'fa-puzzle-piece', 
+					'name'	   => $this->language->get('text_pc_builder'),
+					'href'     => '',
+					'children' => $pc_builder
+				);		
+			}
+      ]]></add>
+    </operation>
+  </file>  
+  <!-- common/column_left [END] -->
+  <!-- catalog/category [START] -->
+  <file path="admin/controller/catalog/category.php">
+    <operation>
+      <search><![CDATA[
+      $this->load->model('catalog/filter');
+      ]]></search>
+      <add position="before"><![CDATA[
+			if (isset($this->request->post['incompatible_category'])) {
+				$incompatible_categories = $this->request->post['incompatible_category'];
+			} elseif (isset($this->request->get['category_id'])) {
+				$incompatible_categories = $this->model_catalog_category->getCategoryIncompatibleCategory($this->request->get['category_id']);
+			} else {
+				$incompatible_categories = array();
+			}
+
+			$data['incompatible_categories'] = array();
+
+			foreach ($incompatible_categories as $incompatible_category_id) {
+				$incompatible_category_info = $this->model_catalog_category->getCategory($incompatible_category_id);
+
+				if ($incompatible_category_info) {
+					$data['incompatible_categories'][] = array(
+						'category_id' => $incompatible_category_info['category_id'],
+						'name' => $incompatible_category_info['name']
+					);
+				}
+			}
+      ]]></add>
+    </operation>
+  </file>  
+  <!-- catalog/category [END] -->
+  <!-- sale/order [START] -->
+  <file path="admin/controller/sale/order.php">
+    <operation>
+      <search><![CDATA[
+      $data['vouchers'] = array();
+      ]]></search>
+      <add position="before"><![CDATA[
+			$data['pc_builders'] = array();
+
+			$pc_builders = $this->model_sale_order->getOrderPcBuilders($this->request->get['order_id']);
+
+			foreach ($pc_builders as $pc_builder) {
+				$data['pc_builders'][] = array(
+					'build'                 => json_decode($pc_builder['build'], true),
+					'pc_builder_categories' => json_decode($pc_builder['pc_builder_categories'], true),
+					'amount'                => $this->currency->format($pc_builder['amount'], $order_info['currency_code'], $order_info['currency_value']),
+				);
+			}
+      ]]></add>
+    </operation>
+    <operation>
+      <search><![CDATA[
+      $voucher_data = array();
+      ]]></search>
+      <add position="before"><![CDATA[
+			$pc_builder_data = array();
+
+			$pc_builders = $this->model_sale_order->getOrderPcBuilders($this->request->get['order_id']);
+
+			foreach ($pc_builders as $pc_builder) {
+				$pc_builder_data[] = array(
+					'build'                 => json_decode($pc_builder['build'], true),
+					'pc_builder_categories' => json_decode($pc_builder['pc_builder_categories'], true),
+					'amount'                => $this->currency->format($pc_builder['amount'], $order_info['currency_code'], $order_info['currency_value']),
+				);
+			}
+      ]]></add>
+    </operation>
+    <operation>
+      <search><![CDATA[
+      'voucher'          => $voucher_data,
+      ]]></search>
+      <add position="before"><![CDATA[
+			'pc_builder'       => $pc_builder_data,
+      ]]></add>
+    </operation>
+    <operation>
+      <search index="2"><![CDATA[
+      $data['orders'][] = array(
+      ]]></search>
+      <add position="before"><![CDATA[
+			$pc_builder_data = array();
+
+			$pc_builders = $this->model_sale_order->getOrderPcBuilders($this->request->get['order_id']);
+
+			foreach ($pc_builders as $pc_builder) {
+				$pc_builder_data[] = array(
+					'build'                 => json_decode($pc_builder['build'], true),
+					'pc_builder_categories' => json_decode($pc_builder['pc_builder_categories'], true),
+					'amount'                => $this->currency->format($pc_builder['amount'], $order_info['currency_code'], $order_info['currency_value']),
+				);
+			}
+      ]]></add>
+    </operation>
+    <operation>
+      <search index="1"><![CDATA[
+      'product'          => $product_data,
+      ]]></search>
+      <add position="after"><![CDATA[
+			'pc_builder'       => $pc_builder_data,
+      ]]></add>
+    </operation>
+  </file>  
+  <!-- sale/order [END] -->
+  <!-- startup/permission [START] -->
+  <file path="admin/controller/startup/permission.php">
+    <operation>
+      <search><![CDATA[
+      'extension/payment',
+      ]]></search>
+      <add position="after"><![CDATA[
+			'extension/pc_builder',
+      ]]></add>
+    </operation>
+  </file>  
+  <!-- startup/permission [END] -->
+<!-- ADMIN - CONTROLLER [END] -->
+<!-- ADMIN - LANGUAGE [START] -->
+  <!-- en-gb/en-gb [START] -->
+  <file path="admin/language/en-gb/en-gb.php">
+    <operation>
+      <search><![CDATA[
+      <?php
+      ]]></search>
+      <add position="after"><![CDATA[
+			// Text
+			$_['text_pc_builder'] = 'PC Builder';
+			$_['text_pc_builder_components'] = 'PC Builder Components';
+			$_['text_pc_builder_categories'] = 'PC Builder Categories';
+			$_['text_pc_builder_settings'] = 'PC Builder Settings';
+
+			// Entry
+			$_['entry_incompatible_category'] = 'Incompatible Category';
+
+			// Help
+			$_['help_incompatible_category'] = '(Autocomplete)';
+      ]]></add>
+    </operation>
+  </file>  
+  <!-- en-gb/en-gb [END] -->
+<!-- ADMIN - LANGUAGE [END] -->
+<!-- ADMIN - MODEL [START] -->
+  <!-- catalog/category [START] -->
+  <file path="admin/model/catalog/category.php">
+    <operation>
+      <search index="0"><![CDATA[
+      if (isset($data['category_filter'])) {
+      ]]></search>
+      <add position="before"><![CDATA[
+			if (isset($data['incompatible_category'])) {
+				foreach ($data['incompatible_category'] as $incompatible_id) {
+					$this->db->query("DELETE FROM " . DB_PREFIX . "pc_builder_incompatible_category WHERE category_id = '" . (int)$category_id . "' AND incompatible_id = '" . (int)$incompatible_id . "'");
+					$this->db->query("INSERT INTO " . DB_PREFIX . "pc_builder_incompatible_category SET category_id = '" . (int)$category_id . "', incompatible_id = '" . (int)$incompatible_id . "'");
+					$this->db->query("DELETE FROM " . DB_PREFIX . "pc_builder_incompatible_category WHERE category_id = '" . (int)$incompatible_id . "' AND incompatible_id = '" . (int)$category_id . "'");
+					$this->db->query("INSERT INTO " . DB_PREFIX . "pc_builder_incompatible_category SET category_id = '" . (int)$incompatible_id . "', incompatible_id = '" . (int)$category_id . "'");
+				}
+			}
+      ]]></add>
+    </operation>
+    <operation>
+      <search index="1"><![CDATA[
+      if (isset($data['category_filter'])) {
+      ]]></search>
+      <add position="before"><![CDATA[
+			$this->db->query("DELETE FROM " . DB_PREFIX . "pc_builder_incompatible_category WHERE category_id = '" . (int)$category_id . "'");
+			$this->db->query("DELETE FROM " . DB_PREFIX . "pc_builder_incompatible_category WHERE incompatible_id = '" . (int)$category_id . "'");
+
+			if (isset($data['incompatible_category'])) {
+				foreach ($data['incompatible_category'] as $incompatible_id) {
+					$this->db->query("DELETE FROM " . DB_PREFIX . "pc_builder_incompatible_category WHERE category_id = '" . (int)$category_id . "' AND incompatible_id = '" . (int)$incompatible_id . "'");
+					$this->db->query("INSERT INTO " . DB_PREFIX . "pc_builder_incompatible_category SET category_id = '" . (int)$category_id . "', incompatible_id = '" . (int)$incompatible_id . "'");
+					$this->db->query("DELETE FROM " . DB_PREFIX . "pc_builder_incompatible_category WHERE category_id = '" . (int)$incompatible_id . "' AND incompatible_id = '" . (int)$category_id . "'");
+					$this->db->query("INSERT INTO " . DB_PREFIX . "pc_builder_incompatible_category SET category_id = '" . (int)$incompatible_id . "', incompatible_id = '" . (int)$category_id . "'");
+				}
+			}
+      ]]></add>
+    </operation>
+    <operation>
+      <search><![CDATA[
+      public function getCategoryFilters($category_id) {
+      ]]></search>
+      <add position="before"><![CDATA[
+			public function getCategoryIncompatibleCategory($category_id) {
+				$incompatible_category_data = array();
+
+				$query = $this->db->query("SELECT * FROM " . DB_PREFIX . "pc_builder_incompatible_category WHERE category_id = '" . (int)$category_id . "'");
+
+				foreach ($query->rows as $result) {
+					$incompatible_category_data[] = $result['incompatible_id'];
+				}
+
+				return $incompatible_category_data;
+			}
+      ]]></add>
+    </operation>
+  </file>  
+  <!-- catalog/category [END] -->
+  <!-- sale/order [START] -->
+  <file path="admin/model/sale/order.php">
+    <operation>
+      <search><![CDATA[
+      public function getOrderVouchers($order_id) {
+      ]]></search>
+      <add position="before"><![CDATA[
+			public function getOrderPcBuilders($order_id) {
+				$query = $this->db->query("SELECT * FROM " . DB_PREFIX . "pc_builder_order WHERE order_id = '" . (int)$order_id . "'");
+
+				return $query->rows;
+			}
+      ]]></add>
+    </operation>
+  </file>  
+  <!-- sale/order [END] -->
+<!-- ADMIN - MODEL [END] -->
+<!-- ADMIN - THEME [START] -->
+  <!-- catalog/category_form [START] -->
+  <file path="admin/view/template/catalog/category_form.twig">
+    <operation>
+      <search><![CDATA[
+      <label class="col-sm-2 control-label" for="input-filter"><span data-toggle="tooltip" title="{{ help_filter }}">{{ entry_filter }}</span></label>
+      ]]></search>
+      <add position="before"><![CDATA[
+        <label class="col-sm-2 control-label" for="input-incompatible-category"><span data-toggle="tooltip" title="{{ help_incompatible_category }}">{{ entry_incompatible_category }}</span></label>
+        <div class="col-sm-10">
+          <input type="text" name="incompatible_category" value="" placeholder="{{ entry_incompatible_category }}" id="input-incompatible-category" class="form-control"/>
+          <div id="incompatible-category" class="well well-sm" style="height: 150px; overflow: auto;"> {% for incompatible_category in incompatible_categories %}
+              <div id="incompatible-category{{ incompatible_category.category_id }}"><i class="fa fa-minus-circle"></i> {{ incompatible_category.name }}
+                <input type="hidden" name="incompatible_category[]" value="{{ incompatible_category.category_id }}"/>
+              </div>
+            {% endfor %}</div>
+        </div>
+      </div>
+      <div class="form-group">
+      ]]></add>
+    </operation>
+    <operation>
+      <search><![CDATA[
+			<script type="text/javascript" src="view/javascript/summernote/opencart.js"></script>
+      ]]></search>
+      <add position="after"><![CDATA[
+		  <script type="text/javascript"><!--
+		  // Incompatible Category
+		  $('input[name=\'incompatible_category\']').autocomplete({
+			  'source': function(request, response) {
+				  $.ajax({
+					  url: 'index.php?route=catalog/category/autocomplete&user_token={{ user_token }}&filter_name=' + encodeURIComponent(request),
+					  dataType: 'json',
+					  success: function(json) {
+						  response($.map(json, function(item) {
+							  return {
+								  label: item['name'],
+								  value: item['category_id']
+							  }
+						  }));
+					  }
+				  });
+			  },
+			  'select': function(item) {
+				  $('input[name=\'incompatible_category\']').val('');
+
+				  $('#incompatible-category' + item['value']).remove();
+
+				  $('#incompatible-category').append('<div id="incompatible-category' + item['value'] + '"><i class="fa fa-minus-circle"></i> ' + item['label'] + '<input type="hidden" name="incompatible_category[]" value="' + item['value'] + '" /></div>');
+			  }
+		  });
+
+		  $('#incompatible-category').delegate('.fa-minus-circle', 'click', function() {
+			  $(this).parent().remove();
+		  });
+		  //--></script>
+      ]]></add>
+    </operation>
+  </file>  
+  <!-- catalog/category_form [END] -->
+  <!-- sale/order_info [START] -->
+  <file path="admin/view/template/sale/order_info.twig">
+    <operation>
+      <search><![CDATA[
+      {% for voucher in vouchers %}
+      ]]></search>
+      <add position="before"><![CDATA[
+      {% for pc_builder in pc_builders %}
+        <tr>
+          <td class="text-left">
+	        	<h3 style="margin-top: 0px;">{{ text_pc_builder }}</h3>
+	        	<div>
+	        		{% for build in pc_builder.pc_builder_categories %}
+	        			<div style="margin-bottom: 15px;">
+			        		<h4>{{ build.name }}</h4>
+			        		{% for pc_builder_component in build.pc_builder_components %}
+				        		<div class="row" style="margin-bottom: 5px;">
+				        		<div class="col-sm-4">{{ pc_builder_component.name }}</div>
+				        		<div class="col-sm-8">
+				        			{% if pc_builder_component.product %}
+					        			<div>{{ pc_builder_component.product.name }}</div>
+					        			{% if pc_builder_component.product.option %}
+					        				{% for product_option in pc_builder_component.product.option %}
+					        				<div class="small">- {{ product_option.name }}: {{ product_option.value }}</div>
+					        				{% endfor %}
+					        			{% endif %}
+				        			{% endif %}
+				        		</div>
+				        		</div>
+			        		{% endfor %}
+		        		</div>
+	        		{% endfor %}
+	        	</div>
+          </td>
+          <td class="text-left">{{ text_pc_builder }}</td>
+          <td class="text-right">1</td>
+          <td class="text-right">{{ pc_builder.amount }}</td>
+          <td class="text-right">{{ pc_builder.amount }}</td>
+        </tr>
+      {% endfor %}
+      ]]></add>
+    </operation>
+  </file>  
+  <!-- sale/order_info [END] -->
+  <!-- sale/order_invoice [START] -->
+  <file path="admin/view/template/sale/order_invoice.twig">
+    <operation>
+      <search><![CDATA[
+      {% for voucher in order.voucher %}
+      ]]></search>
+      <add position="before"><![CDATA[
+      {% for pc_builder in order.pc_builder %}
+        <tr>
+          <td class="text-left">
+	        	<h3 style="margin-top: 0px;">{{ text_pc_builder }}</h3>
+	        	<div>
+	        		{% for build in pc_builder.pc_builder_categories %}
+	        			<div style="margin-bottom: 15px;">
+			        		<h4>{{ build.name }}</h4>
+			        		{% for pc_builder_component in build.pc_builder_components %}
+				        		<div class="row" style="margin-bottom: 5px;">
+				        		<div class="col-sm-4">{{ pc_builder_component.name }}</div>
+				        		<div class="col-sm-8">
+				        			{% if pc_builder_component.product %}
+					        			<div>{{ pc_builder_component.product.name }}</div>
+					        			{% if pc_builder_component.product.option %}
+					        				{% for product_option in pc_builder_component.product.option %}
+					        				<div class="small">- {{ product_option.name }}: {{ product_option.value }}</div>
+					        				{% endfor %}
+					        			{% endif %}
+				        			{% endif %}
+				        		</div>
+				        		</div>
+			        		{% endfor %}
+		        		</div>
+	        		{% endfor %}
+	        	</div>
+          </td>
+          <td class="text-left">{{ text_pc_builder }}</td>
+          <td class="text-right">1</td>
+          <td class="text-right">{{ pc_builder.amount }}</td>
+          <td class="text-right">{{ pc_builder.amount }}</td>
+        </tr>
+      {% endfor %}
+      ]]></add>
+    </operation>
+  </file>  
+  <!-- sale/order_invoice [END] -->
+  <!-- sale/order_shipping [START] -->
+  <file path="admin/view/template/sale/order_shipping.twig">
+    <operation>
+      <search index="2"><![CDATA[
+      </tbody>
+      ]]></search>
+      <add position="before"><![CDATA[
+      {% for pc_builder in order.pc_builder %}
+        <tr>
+          <td class="text-left"></td>
+          <td class="text-left"></td>
+          <td class="text-left">
+	        	<h4 style="margin-top: 0px;">{{ text_pc_builder }}</h4>
+	        	<div>
+	        		{% for build in pc_builder.pc_builder_categories %}
+	        			<div style="margin-bottom: 15px;">
+			        		<h5><strong>{{ build.name }}</strong></h5>
+			        		{% for pc_builder_component in build.pc_builder_components %}
+				        		<div class="row" style="margin-bottom: 5px;">
+				        		<div class="col-sm-4">{{ pc_builder_component.name }}</div>
+				        		<div class="col-sm-8">
+				        			{% if pc_builder_component.product %}
+					        			<div>{{ pc_builder_component.product.name }}</div>
+					        			{% if pc_builder_component.product.option %}
+					        				{% for product_option in pc_builder_component.product.option %}
+					        				<div class="small">- {{ product_option.name }}: {{ product_option.value }}</div>
+					        				{% endfor %}
+					        			{% endif %}
+				        			{% endif %}
+				        		</div>
+				        		</div>
+			        		{% endfor %}
+		        		</div>
+	        		{% endfor %}
+	        	</div>
+          </td>
+          <td class="text-right"></td>
+          <td class="text-right">{{ text_pc_builder }}</td>
+          <td class="text-right">1</td>
+        </tr>
+      {% endfor %}
+      ]]></add>
+    </operation>
+  </file>  
+  <!-- sale/order_shipping [END] -->
+<!-- ADMIN - THEME [END] -->
+<!-- CATALOG - CONTROLLER [START] -->
+  <!-- account/order [START] -->
+  <file path="catalog/controller/account/order.php">
+    <operation>
+      <search><![CDATA[
+      $voucher_total = $this->model_account_order->getTotalOrderVouchersByOrderId($result['order_id']);
+      ]]></search>
+      <add position="after"><![CDATA[
+      $pc_builder_total = $this->model_account_order->getTotalOrderPcBuildersByOrderId($result['order_id']);
+      ]]></add>
+    </operation>
+    <operation>
+      <search><![CDATA[
+      'products'   => ($product_total + $voucher_total),
+      ]]></search>
+      <add position="replace"><![CDATA[
+      'products'   => ($product_total + $voucher_total + $pc_builder_total),
+      ]]></add>
+    </operation>
+    <operation>
+      <search><![CDATA[
+      // Voucher
+      ]]></search>
+      <add position="before"><![CDATA[
+			// PC Builders
+			$data['pc_builders'] = array();
+
+			$pc_builders = $this->model_account_order->getOrderPcBuilders($this->request->get['order_id']);
+
+			foreach ($pc_builders as $pc_builder) {
+				$data['pc_builders'][] = array(
+					'build'                 => json_decode($pc_builder['build'], true),
+					'pc_builder_categories' => json_decode($pc_builder['pc_builder_categories'], true),
+					'amount'                => $this->currency->format($pc_builder['amount'], $order_info['currency_code'], $order_info['currency_value']),
+				);
+			}
+      ]]></add>
+    </operation>
+  </file>  
+  <!-- account/order [END] -->
+  <!-- common/header [START] -->
+  <file path="catalog/controller/common/header.php">
+    <operation>
+      <search><![CDATA[
+      $data['contact'] = $this->url->link('information/contact');
+      ]]></search>
+      <add position="after"><![CDATA[
+			$data['pc_builder'] = $this->url->link('extension/pc_builder/pc_builder');
+			$data['pc_builder_build'] = $this->url->link('extension/pc_builder/pc_builder_build');
+      ]]></add>
+    </operation>
+  </file>  
+  <!-- common/header [END] -->
+  <!-- common/cart [START] -->
+  <file path="catalog/controller/common/cart.php">
+    <operation>
+      <search><![CDATA[
+      $this->load->language('common/cart');
+      ]]></search>
+      <add position="after"><![CDATA[
+			// PC Builder
+			$pc_builder_amount = 0;
+			$pc_builder_weight = 0;
+
+			$data['pc_builders'] = array();
+
+			if (!empty($this->session->data['pc_builders'])) {
+				$this->load->model('extension/pc_builder/pc_builder_category');
+				$this->load->model('extension/pc_builder/pc_builder_component');
+				$this->load->model('extension/pc_builder/pc_builder_product');
+				$this->load->model('extension/pc_builder/pc_builder_build');
+
+				$this->load->model('tool/image');
+				$this->load->model('tool/upload');
+
+				$url = '';
+
+				foreach ($this->session->data['pc_builders'] as $key => $pc_builder) {
+					$pc_builder_categories_data = array();
+
+					$pc_builder_categories = $this->model_extension_pc_builder_pc_builder_category->getPcBuilderCategories();
+
+					foreach ($pc_builder_categories as $pc_builder_category) {
+						// Get PC Builder Components
+						$pc_builder_components_data = array();
+
+						$filter_data = array(
+							'filter_category_id' => $pc_builder_category['pc_builder_category_id'],
+						);
+
+						$pc_builder_components = $this->model_extension_pc_builder_pc_builder_component->getPcBuilderComponents($filter_data);
+
+						foreach ($pc_builder_components as $pc_builder_component) {
+							if ($pc_builder_component['image']) {
+								$thumb = $this->model_tool_image->resize($pc_builder_component['image'], 32, 32);
+							} else {
+								$thumb = $this->model_tool_image->resize('placeholder.png', 32, 32);
+							}
+
+							$pc_builder_selected_products = $pc_builder['build'];
+
+							if (isset($pc_builder_selected_products[$pc_builder_component['pc_builder_component_id']]['product_id'])) {
+								(float)$option_price = 0;
+								$option_points = 0;
+								$option_weight = 0;
+
+								$product_info = $this->model_extension_pc_builder_pc_builder_product->getProduct($pc_builder_selected_products[$pc_builder_component['pc_builder_component_id']]['product_id']);
+
+								if ($product_info) {
+									if ($product_info['image']) {
+										$image = $this->model_tool_image->resize($product_info['image'], 32, 32);
+									} else {
+										$image = '';
+									}
+
+									$option_data = array();
+
+									foreach ($pc_builder_selected_products[$pc_builder_component['pc_builder_component_id']]['option'] as $product_option_id => $value) {
+
+										// Get Selected Product Option Data
+										$option = $this->model_extension_pc_builder_pc_builder_product->getSelectedProductOptionData($product_option_id, $value, $product_info['product_id'], 1);
+
+										if ($option) {
+											if ($option['type'] != 'file') {
+												$value = $option['value'];
+											} else {
+												$upload_info = $this->model_tool_upload->getUploadByCode($option['value']);
+
+												if ($upload_info) {
+													$value = $upload_info['name'];
+												} else {
+													$value = '';
+												}
+											}
+
+											$option_data[] = array(
+												'name'          => $option['name'],
+												'value'         => (utf8_strlen($value) > 20 ? utf8_substr($value, 0, 20) . '..' : $value),
+												'type'          => $option['type'],
+												'quantity'      => $option['quantity'],
+												'subtract'      => $option['subtract'],
+												'price'         => $option['price'],
+												'price_prefix'  => $option['price_prefix'],
+												'points'        => $option['points'],
+												'points_prefix' => $option['points_prefix'],
+												'weight'        => $option['weight'],
+												'weight_prefix' => $option['weight_prefix'],
+											);
+
+											if ($option['price_prefix'] == '+') {
+												$option_price += $option['price'];
+											} elseif ($option['price_prefix'] == '-') {
+												$option_price -= $option['price'];
+											}
+
+											if ($option['points_prefix'] == '+') {
+												$option_points += $option['points'];
+											} elseif ($option['points_prefix'] == '-') {
+												$option_points -= $option['points'];
+											}
+
+											if ($option['weight_prefix'] == '+') {
+												$option_weight += $option['weight'];
+											} elseif ($option['weight_prefix'] == '-') {
+												$option_weight -= $option['weight'];
+											}
+										}
+									}
+
+									// Display prices
+									if ($this->customer->isLogged() || !$this->config->get('config_customer_price')) {
+										if (!is_null($product_info['special']) && (float)$product_info['special'] >= 0) {
+											$special = (float)$product_info['special'];
+										} else {
+											$special = false;
+										}
+
+										if ($special) {
+											$unit_price = $this->tax->calculate(((float)$special + (float)$option_price), $product_info['tax_class_id'], $this->config->get('config_tax'));
+										} else {
+											$unit_price = $this->tax->calculate(((float)$product_info['price'] + (float)$option_price), $product_info['tax_class_id'], $this->config->get('config_tax'));
+										}
+
+										$price = $this->currency->format($unit_price, $this->session->data['currency']);
+										$total = $this->currency->format($unit_price * 1, $this->session->data['currency']);
+									} else {
+										$price = false;
+										$total = false;
+									}
+
+									$product_data = array(
+										'product_id' => $product_info['product_id'],
+										'name' => $product_info['name'],
+										'image' => $image,
+										'option' => $option_data,
+										'price' => $price,
+									);
+								} else {
+									$product_data = array();
+								}
+							} else {
+								$product_data = array();
+							}
+
+							$pc_builder_components_data[] = array(
+								'pc_builder_component_id' => $pc_builder_component['pc_builder_component_id'],
+								'name' => $pc_builder_component['name'],
+								'thumb' => $thumb,
+								'product' => $product_data,
+								'required' => $pc_builder_component['required'],
+								'href' => $this->url->link('extension/pc_builder/pc_builder_search', 'pc_builder_component_id=' . $pc_builder_component['pc_builder_component_id'] . $url)
+							);
+						}
+
+						$pc_builder_categories_data[] = array(
+							'pc_builder_category_id' => $pc_builder_category['pc_builder_category_id'],
+							'name' => $pc_builder_category['name'],
+							'pc_builder_components' => $pc_builder_components_data,
+						);
+					}
+					$data['pc_builders'][] = array(
+						'key'         => $key,
+						'build'       => $pc_builder_categories_data,
+						'amount'      => $this->currency->format($pc_builder['amount'], $this->session->data['currency']),
+						'weight'      => $pc_builder['weight'],
+					);
+
+					$pc_builder_amount += $pc_builder['amount'];
+					$pc_builder_weight = $pc_builder['weight'];
+				}
+			}
+      ]]></add>
+    </operation>
+    <operation>
+      <search><![CDATA[
+      $data['text_items'] = sprintf($this->language->get('text_items'), $this->cart->countProducts() + (isset($this->session->data['vouchers']) ? count($this->session->data['vouchers']) : 0), $this->currency->format($total, $this->session->data['currency']));
+      ]]></search>
+      <add position="replace"><![CDATA[
+			$data['text_items'] = sprintf($this->language->get('text_items'), $this->cart->countProducts() + (isset($this->session->data['vouchers']) ? count($this->session->data['vouchers']) : 0) + (isset($this->session->data['pc_builders']) ? count($this->session->data['pc_builders']) : 0), $this->currency->format($total, $this->session->data['currency']));
+      ]]></add>
+    </operation>
+  </file>  
+  <!-- common/cart [END] -->
+  <!-- checkout/cart [START] -->
+  <file path="catalog/controller/checkout/cart.php">
+    <operation>
+      <search><![CDATA[
+      if ($this->cart->hasProducts() || !empty($this->session->data['vouchers'])) {
+      ]]></search>
+      <add position="replace"><![CDATA[
+			if ($this->cart->hasProducts() || !empty($this->session->data['vouchers']) || !empty($this->session->data['pc_builders'])) {
+      ]]></add>
+    </operation>
+    <operation>
+      <search><![CDATA[
+      // Gift Voucher
+      ]]></search>
+      <add position="before"><![CDATA[
+			// PC Builder
+			$data['pc_builders'] = array();
+
+			if (!empty($this->session->data['pc_builders'])) {
+				$this->load->model('extension/pc_builder/pc_builder_category');
+				$this->load->model('extension/pc_builder/pc_builder_component');
+				$this->load->model('extension/pc_builder/pc_builder_product');
+				$this->load->model('extension/pc_builder/pc_builder_build');
+
+				$this->load->model('tool/image');
+				$this->load->model('tool/upload');
+
+				$url = '';
+
+				foreach ($this->session->data['pc_builders'] as $key => $pc_builder) {
+					$pc_builder_categories_data = array();
+
+					$pc_builder_categories = $this->model_extension_pc_builder_pc_builder_category->getPcBuilderCategories();
+
+					foreach ($pc_builder_categories as $pc_builder_category) {
+						// Get PC Builder Components
+						$pc_builder_components_data = array();
+
+						$filter_data = array(
+							'filter_category_id' => $pc_builder_category['pc_builder_category_id'],
+						);
+
+						$pc_builder_components = $this->model_extension_pc_builder_pc_builder_component->getPcBuilderComponents($filter_data);
+
+						foreach ($pc_builder_components as $pc_builder_component) {
+							if ($pc_builder_component['image']) {
+								$thumb = $this->model_tool_image->resize($pc_builder_component['image'], 32, 32);
+							} else {
+								$thumb = $this->model_tool_image->resize('placeholder.png', 32, 32);
+							}
+
+							$pc_builder_selected_products = $pc_builder['build'];
+
+							if (isset($pc_builder_selected_products[$pc_builder_component['pc_builder_component_id']]['product_id'])) {
+								(float)$option_price = 0;
+								$option_points = 0;
+								$option_weight = 0;
+
+								$product_info = $this->model_extension_pc_builder_pc_builder_product->getProduct($pc_builder_selected_products[$pc_builder_component['pc_builder_component_id']]['product_id']);
+
+								if ($product_info) {
+									if ($product_info['image']) {
+										$image = $this->model_tool_image->resize($product_info['image'], 32, 32);
+									} else {
+										$image = '';
+									}
+
+									$option_data = array();
+
+									foreach ($pc_builder_selected_products[$pc_builder_component['pc_builder_component_id']]['option'] as $product_option_id => $value) {
+
+										// Get Selected Product Option Data
+										$option = $this->model_extension_pc_builder_pc_builder_product->getSelectedProductOptionData($product_option_id, $value, $product_info['product_id'], 1);
+
+										if ($option) {
+											if ($option['type'] != 'file') {
+												$value = $option['value'];
+											} else {
+												$upload_info = $this->model_tool_upload->getUploadByCode($option['value']);
+
+												if ($upload_info) {
+													$value = $upload_info['name'];
+												} else {
+													$value = '';
+												}
+											}
+
+											$option_data[] = array(
+												'name'          => $option['name'],
+												'value'         => (utf8_strlen($value) > 20 ? utf8_substr($value, 0, 20) . '..' : $value),
+												'type'          => $option['type'],
+												'quantity'      => $option['quantity'],
+												'subtract'      => $option['subtract'],
+												'price'         => $option['price'],
+												'price_prefix'  => $option['price_prefix'],
+												'points'        => $option['points'],
+												'points_prefix' => $option['points_prefix'],
+												'weight'        => $option['weight'],
+												'weight_prefix' => $option['weight_prefix'],
+											);
+
+											if ($option['price_prefix'] == '+') {
+												$option_price += $option['price'];
+											} elseif ($option['price_prefix'] == '-') {
+												$option_price -= $option['price'];
+											}
+
+											if ($option['points_prefix'] == '+') {
+												$option_points += $option['points'];
+											} elseif ($option['points_prefix'] == '-') {
+												$option_points -= $option['points'];
+											}
+
+											if ($option['weight_prefix'] == '+') {
+												$option_weight += $option['weight'];
+											} elseif ($option['weight_prefix'] == '-') {
+												$option_weight -= $option['weight'];
+											}
+										}
+									}
+
+									// Display prices
+									if ($this->customer->isLogged() || !$this->config->get('config_customer_price')) {
+										if (!is_null($product_info['special']) && (float)$product_info['special'] >= 0) {
+											$special = (float)$product_info['special'];
+										} else {
+											$special = false;
+										}
+
+										if ($special) {
+											$unit_price = $this->tax->calculate(((float)$special + (float)$option_price), $product_info['tax_class_id'], $this->config->get('config_tax'));
+										} else {
+											$unit_price = $this->tax->calculate(((float)$product_info['price'] + (float)$option_price), $product_info['tax_class_id'], $this->config->get('config_tax'));
+										}
+
+										$price = $this->currency->format($unit_price, $this->session->data['currency']);
+										$total = $this->currency->format($unit_price * 1, $this->session->data['currency']);
+									} else {
+										$price = false;
+										$total = false;
+									}
+
+									$product_data = array(
+										'product_id' => $product_info['product_id'],
+										'name' => $product_info['name'],
+										'image' => $image,
+										'option' => $option_data,
+										'price' => $price,
+									);
+								} else {
+									$product_data = array();
+								}
+							} else {
+								$product_data = array();
+							}
+
+							$pc_builder_components_data[] = array(
+								'pc_builder_component_id' => $pc_builder_component['pc_builder_component_id'],
+								'name' => $pc_builder_component['name'],
+								'thumb' => $thumb,
+								'product' => $product_data,
+								'required' => $pc_builder_component['required'],
+								'href' => $this->url->link('extension/pc_builder/pc_builder_search', 'pc_builder_component_id=' . $pc_builder_component['pc_builder_component_id'] . $url)
+							);
+						}
+
+						$pc_builder_categories_data[] = array(
+							'pc_builder_category_id' => $pc_builder_category['pc_builder_category_id'],
+							'name' => $pc_builder_category['name'],
+							'pc_builder_components' => $pc_builder_components_data,
+						);
+					}
+					$data['pc_builders'][] = array(
+						'key'         => $key,
+						'build'       => $pc_builder_categories_data,
+						'amount'      => $this->currency->format($pc_builder['amount'], $this->session->data['currency']),
+						'weight'      => $pc_builder['weight'],
+					);
+				}
+			}
+      ]]></add>
+    </operation>
+  </file>  
+  <!-- checkout/cart [END] -->
+  <!-- checkout/checkout [START] -->
+  <file path="catalog/controller/checkout/checkout.php">
+    <operation>
+      <search><![CDATA[
+      if ((!$this->cart->hasProducts() && empty($this->session->data['vouchers'])) || (!$this->cart->hasStock() && !$this->config->get('config_stock_checkout'))) {
+      ]]></search>
+      <add position="replace"><![CDATA[
+			if ((!$this->cart->hasProducts() && empty($this->session->data['vouchers']) && empty($this->session->data['pc_builders'])) || (!$this->cart->hasStock() && !$this->config->get('config_stock_checkout'))) {
+      ]]></add>
+    </operation>
+  </file>  
+  <!-- checkout/checkout [END] -->
+  <!-- checkout/confirm [START] -->
+  <file path="catalog/controller/checkout/confirm.php">
+    <operation>
+      <search><![CDATA[
+      if ((!$this->cart->hasProducts() && empty($this->session->data['vouchers'])) || (!$this->cart->hasStock() && !$this->config->get('config_stock_checkout'))) {
+      ]]></search>
+      <add position="replace"><![CDATA[
+			if ((!$this->cart->hasProducts() && empty($this->session->data['vouchers']) && empty($this->session->data['pc_builders'])) || (!$this->cart->hasStock() && !$this->config->get('config_stock_checkout'))) {
+      ]]></add>
+    </operation>
+    <operation>
+      <search><![CDATA[
+      $order_data['total'] = $total_data['total'];
+      ]]></search>
+      <add position="replace"><![CDATA[
+    	if (!empty($this->session->data['pc_builders'])) {
+    		(float)$pc_builder_total = 0;
+
+    		foreach ($this->session->data['pc_builders'] as $pc_builder) {
+    			$pc_builder_total += (float)$pc_builder['amount'];
+    		}
+
+				$order_data['total'] = ((float)$total_data['total'] + (float)$pc_builder_total);
+				$order_data['pc_builders'] = $this->session->data['pc_builders'];
+    	} else {
+				$order_data['total'] = $total_data['total'];
+				$order_data['pc_builders'] = array();
+
+    	}
+      ]]></add>
+    </operation>
+    <operation>
+      <search index="0"><![CDATA[
+      // Gift Voucher
+      ]]></search>
+      <add position="before"><![CDATA[
+			// PC Builder
+			$order_data['pc_builders'] = array();
+
+			if (!empty($this->session->data['pc_builders'])) {
+				$this->load->model('extension/pc_builder/pc_builder_category');
+				$this->load->model('extension/pc_builder/pc_builder_component');
+				$this->load->model('extension/pc_builder/pc_builder_product');
+				$this->load->model('extension/pc_builder/pc_builder_build');
+
+				$this->load->model('tool/image');
+				$this->load->model('tool/upload');
+
+				$url = '';
+
+				foreach ($this->session->data['pc_builders'] as $pc_builder) {
+					$pc_builder_categories_data = array();
+
+					$pc_builder_categories = $this->model_extension_pc_builder_pc_builder_category->getPcBuilderCategories();
+
+					foreach ($pc_builder_categories as $pc_builder_category) {
+						// Get PC Builder Components
+						$pc_builder_components_data = array();
+
+						$filter_data = array(
+							'filter_category_id' => $pc_builder_category['pc_builder_category_id'],
+						);
+
+						$pc_builder_components = $this->model_extension_pc_builder_pc_builder_component->getPcBuilderComponents($filter_data);
+
+						foreach ($pc_builder_components as $pc_builder_component) {
+							if ($pc_builder_component['image']) {
+								$thumb = $this->model_tool_image->resize($pc_builder_component['image'], 32, 32);
+							} else {
+								$thumb = $this->model_tool_image->resize('placeholder.png', 32, 32);
+							}
+
+							$pc_builder_selected_products = $pc_builder['build'];
+
+							if (isset($pc_builder_selected_products[$pc_builder_component['pc_builder_component_id']]['product_id'])) {
+								(float)$option_price = 0;
+								$option_points = 0;
+								$option_weight = 0;
+
+								$product_info = $this->model_extension_pc_builder_pc_builder_product->getProduct($pc_builder_selected_products[$pc_builder_component['pc_builder_component_id']]['product_id']);
+
+								if ($product_info) {
+									if ($product_info['image']) {
+										$image = $this->model_tool_image->resize($product_info['image'], 32, 32);
+									} else {
+										$image = '';
+									}
+
+									$option_data = array();
+
+									foreach ($pc_builder_selected_products[$pc_builder_component['pc_builder_component_id']]['option'] as $product_option_id => $value) {
+
+										// Get Selected Product Option Data
+										$option = $this->model_extension_pc_builder_pc_builder_product->getSelectedProductOptionData($product_option_id, $value, $product_info['product_id'], 1);
+
+										if ($option) {
+											if ($option['type'] != 'file') {
+												$value = $option['value'];
+											} else {
+												$upload_info = $this->model_tool_upload->getUploadByCode($option['value']);
+
+												if ($upload_info) {
+													$value = $upload_info['name'];
+												} else {
+													$value = '';
+												}
+											}
+
+											$option_data[] = array(
+												'name'          => $option['name'],
+												'value'         => (utf8_strlen($value) > 20 ? utf8_substr($value, 0, 20) . '..' : $value),
+												'type'          => $option['type'],
+												'quantity'      => $option['quantity'],
+												'subtract'      => $option['subtract'],
+												'price'         => $option['price'],
+												'price_prefix'  => $option['price_prefix'],
+												'points'        => $option['points'],
+												'points_prefix' => $option['points_prefix'],
+												'weight'        => $option['weight'],
+												'weight_prefix' => $option['weight_prefix'],
+											);
+
+											if ($option['price_prefix'] == '+') {
+												$option_price += $option['price'];
+											} elseif ($option['price_prefix'] == '-') {
+												$option_price -= $option['price'];
+											}
+
+											if ($option['points_prefix'] == '+') {
+												$option_points += $option['points'];
+											} elseif ($option['points_prefix'] == '-') {
+												$option_points -= $option['points'];
+											}
+
+											if ($option['weight_prefix'] == '+') {
+												$option_weight += $option['weight'];
+											} elseif ($option['weight_prefix'] == '-') {
+												$option_weight -= $option['weight'];
+											}
+										}
+									}
+
+									// Display prices
+									if ($this->customer->isLogged() || !$this->config->get('config_customer_price')) {
+										if (!is_null($product_info['special']) && (float)$product_info['special'] >= 0) {
+											$special = (float)$product_info['special'];
+										} else {
+											$special = false;
+										}
+
+										if ($special) {
+											$unit_price = $this->tax->calculate(((float)$special + (float)$option_price), $product_info['tax_class_id'], $this->config->get('config_tax'));
+										} else {
+											$unit_price = $this->tax->calculate(((float)$product_info['price'] + (float)$option_price), $product_info['tax_class_id'], $this->config->get('config_tax'));
+										}
+
+										$price = $this->currency->format($unit_price, $this->session->data['currency']);
+										$total = $this->currency->format($unit_price * 1, $this->session->data['currency']);
+									} else {
+										$price = false;
+										$total = false;
+									}
+
+									$product_data = array(
+										'product_id' => $product_info['product_id'],
+										'name' => $product_info['name'],
+										'image' => $image,
+										'option' => $option_data,
+										'price' => $price,
+									);
+								} else {
+									$product_data = array();
+								}
+							} else {
+								$product_data = array();
+							}
+
+							$pc_builder_components_data[] = array(
+								'pc_builder_component_id' => $pc_builder_component['pc_builder_component_id'],
+								'name' => $pc_builder_component['name'],
+								'thumb' => $thumb,
+								'product' => $product_data,
+								'required' => $pc_builder_component['required'],
+								'href' => $this->url->link('extension/pc_builder/pc_builder_search', 'pc_builder_component_id=' . $pc_builder_component['pc_builder_component_id'] . $url)
+							);
+						}
+
+						$pc_builder_categories_data[] = array(
+							'pc_builder_category_id' => $pc_builder_category['pc_builder_category_id'],
+							'name' => $pc_builder_category['name'],
+							'pc_builder_components' => $pc_builder_components_data,
+						);
+					}
+
+					$order_data['pc_builders'][] = array(
+						'build'                      => $pc_builder_categories_data,
+						'pc_builder_categories'      => $pc_builder_categories_data,
+						'amount'                     => $pc_builder['amount'],
+						'weight'                     => $pc_builder['weight'],
+					);
+				}
+			}
+      ]]></add>
+    </operation>
+    <operation>
+      <search index="1"><![CDATA[
+      // Gift Voucher
+      ]]></search>
+      <add position="before"><![CDATA[
+			// PC Builder
+			$data['pc_builders'] = array();
+
+			if (!empty($this->session->data['pc_builders'])) {
+				$this->load->model('extension/pc_builder/pc_builder_category');
+				$this->load->model('extension/pc_builder/pc_builder_component');
+				$this->load->model('extension/pc_builder/pc_builder_product');
+				$this->load->model('extension/pc_builder/pc_builder_build');
+
+				$this->load->model('tool/image');
+				$this->load->model('tool/upload');
+
+				$url = '';
+
+				foreach ($this->session->data['pc_builders'] as $pc_builder) {
+					$pc_builder_categories_data = array();
+
+					$pc_builder_categories = $this->model_extension_pc_builder_pc_builder_category->getPcBuilderCategories();
+
+					foreach ($pc_builder_categories as $pc_builder_category) {
+						// Get PC Builder Components
+						$pc_builder_components_data = array();
+
+						$filter_data = array(
+							'filter_category_id' => $pc_builder_category['pc_builder_category_id'],
+						);
+
+						$pc_builder_components = $this->model_extension_pc_builder_pc_builder_component->getPcBuilderComponents($filter_data);
+
+						foreach ($pc_builder_components as $pc_builder_component) {
+							if ($pc_builder_component['image']) {
+								$thumb = $this->model_tool_image->resize($pc_builder_component['image'], 32, 32);
+							} else {
+								$thumb = $this->model_tool_image->resize('placeholder.png', 32, 32);
+							}
+
+							$pc_builder_selected_products = $pc_builder['build'];
+
+							if (isset($pc_builder_selected_products[$pc_builder_component['pc_builder_component_id']]['product_id'])) {
+								(float)$option_price = 0;
+								$option_points = 0;
+								$option_weight = 0;
+
+								$product_info = $this->model_extension_pc_builder_pc_builder_product->getProduct($pc_builder_selected_products[$pc_builder_component['pc_builder_component_id']]['product_id']);
+
+								if ($product_info) {
+									if ($product_info['image']) {
+										$image = $this->model_tool_image->resize($product_info['image'], 32, 32);
+									} else {
+										$image = '';
+									}
+
+									$option_data = array();
+
+									foreach ($pc_builder_selected_products[$pc_builder_component['pc_builder_component_id']]['option'] as $product_option_id => $value) {
+
+										// Get Selected Product Option Data
+										$option = $this->model_extension_pc_builder_pc_builder_product->getSelectedProductOptionData($product_option_id, $value, $product_info['product_id'], 1);
+
+										if ($option) {
+											if ($option['type'] != 'file') {
+												$value = $option['value'];
+											} else {
+												$upload_info = $this->model_tool_upload->getUploadByCode($option['value']);
+
+												if ($upload_info) {
+													$value = $upload_info['name'];
+												} else {
+													$value = '';
+												}
+											}
+
+											$option_data[] = array(
+												'name'          => $option['name'],
+												'value'         => (utf8_strlen($value) > 20 ? utf8_substr($value, 0, 20) . '..' : $value),
+												'type'          => $option['type'],
+												'quantity'      => $option['quantity'],
+												'subtract'      => $option['subtract'],
+												'price'         => $option['price'],
+												'price_prefix'  => $option['price_prefix'],
+												'points'        => $option['points'],
+												'points_prefix' => $option['points_prefix'],
+												'weight'        => $option['weight'],
+												'weight_prefix' => $option['weight_prefix'],
+											);
+
+											if ($option['price_prefix'] == '+') {
+												$option_price += $option['price'];
+											} elseif ($option['price_prefix'] == '-') {
+												$option_price -= $option['price'];
+											}
+
+											if ($option['points_prefix'] == '+') {
+												$option_points += $option['points'];
+											} elseif ($option['points_prefix'] == '-') {
+												$option_points -= $option['points'];
+											}
+
+											if ($option['weight_prefix'] == '+') {
+												$option_weight += $option['weight'];
+											} elseif ($option['weight_prefix'] == '-') {
+												$option_weight -= $option['weight'];
+											}
+										}
+									}
+
+									// Display prices
+									if ($this->customer->isLogged() || !$this->config->get('config_customer_price')) {
+										if (!is_null($product_info['special']) && (float)$product_info['special'] >= 0) {
+											$special = (float)$product_info['special'];
+										} else {
+											$special = false;
+										}
+
+										if ($special) {
+											$unit_price = $this->tax->calculate(((float)$special + (float)$option_price), $product_info['tax_class_id'], $this->config->get('config_tax'));
+										} else {
+											$unit_price = $this->tax->calculate(((float)$product_info['price'] + (float)$option_price), $product_info['tax_class_id'], $this->config->get('config_tax'));
+										}
+
+										$price = $this->currency->format($unit_price, $this->session->data['currency']);
+										$total = $this->currency->format($unit_price * 1, $this->session->data['currency']);
+									} else {
+										$price = false;
+										$total = false;
+									}
+
+									$product_data = array(
+										'product_id' => $product_info['product_id'],
+										'name' => $product_info['name'],
+										'image' => $image,
+										'option' => $option_data,
+										'price' => $price,
+									);
+								} else {
+									$product_data = array();
+								}
+							} else {
+								$product_data = array();
+							}
+
+							$pc_builder_components_data[] = array(
+								'pc_builder_component_id' => $pc_builder_component['pc_builder_component_id'],
+								'name' => $pc_builder_component['name'],
+								'thumb' => $thumb,
+								'product' => $product_data,
+								'required' => $pc_builder_component['required'],
+								'href' => $this->url->link('extension/pc_builder/pc_builder_search', 'pc_builder_component_id=' . $pc_builder_component['pc_builder_component_id'] . $url)
+							);
+						}
+
+						$pc_builder_categories_data[] = array(
+							'pc_builder_category_id' => $pc_builder_category['pc_builder_category_id'],
+							'name' => $pc_builder_category['name'],
+							'pc_builder_components' => $pc_builder_components_data,
+						);
+					}
+
+					$data['pc_builders'][] = array(
+						'build'  => $pc_builder_categories_data,
+						'amount' => $this->currency->format($pc_builder['amount'], $this->session->data['currency']),
+						'weight' => $this->weight->format($pc_builder['weight'], $this->config->get('config_weight_class_id'), $this->language->get('decimal_point'), $this->language->get('thousand_point')),
+					);
+				}
+			}
+      ]]></add>
+    </operation>
+  </file>  
+  <!-- checkout/confirm [END] -->
+  <!-- checkout/{guest,guest_shipping,login,payment_address,payment_method,register,shipping_address,shipping_method} [START] -->
+  <file path="catalog/controller/checkout/{guest,guest_shipping,login,payment_address,payment_method,register,shipping_address,shipping_method}.php">
+    <operation>
+      <search><![CDATA[
+      if ((!$this->cart->hasProducts() && empty($this->session->data['vouchers'])) || (!$this->cart->hasStock() && !$this->config->get('config_stock_checkout'))) {
+      ]]></search>
+      <add position="replace"><![CDATA[
+			if ((!$this->cart->hasProducts() && empty($this->session->data['vouchers']) && empty($this->session->data['pc_builders'])) || (!$this->cart->hasStock() && !$this->config->get('config_stock_checkout'))) {
+      ]]></add>
+    </operation>
+  </file>  
+  <!-- checkout/{guest,guest_shipping,login,payment_address,payment_method,register,shipping_address,shipping_method} [END] -->
+  <!-- checkout/success [START] -->
+  <file path="catalog/controller/checkout/success.php">
+    <operation>
+      <search><![CDATA[
+      unset($this->session->data['vouchers']);
+      ]]></search>
+      <add position="after"><![CDATA[
+      unset($this->session->data['pc_builders']);
+      ]]></add>
+    </operation>
+  </file>
+  <!-- checkout/success [END] -->
+  <!-- mail/order [START] -->
+  <file path="catalog/controller/mail/order.php">
+    <operation>
+      <search><![CDATA[
+      // Vouchers
+      ]]></search>
+      <add position="before"><![CDATA[
+		// PC builders
+		$data['pc_builders'] = array();
+
+		$order_pc_builders = $this->model_checkout_order->getOrderPcBuilders($order_info['order_id']);
+
+		foreach ($order_pc_builders as $order_pc_builder) {
+			$data['pc_builders'][] = array(
+				'build'                 => json_decode($order_pc_builder['build'], true),
+				'pc_builder_categories' => json_decode($order_pc_builder['pc_builder_categories'], true),
+				'amount'                => $this->currency->format($order_pc_builder['amount'], $order_info['currency_code'], $order_info['currency_value']),
+			);
+		}
+      ]]></add>
+    </operation>
+    <operation>
+      <search><![CDATA[
+      $data['vouchers'] = array();
+      ]]></search>
+      <add index="1" position="before"><![CDATA[
+		// PC builders
+		$data['pc_builders'] = array();
+
+		$order_pc_builders = $this->model_checkout_order->getOrderPcBuilders($order_info['order_id']);
+
+		foreach ($order_pc_builders as $order_pc_builder) {
+			$data['pc_builders'][] = array(
+				'build'                 => json_decode($order_pc_builder['build'], true),
+				'pc_builder_categories' => json_decode($order_pc_builder['pc_builder_categories'], true),
+				'amount'                => $this->currency->format($order_pc_builder['amount'], $order_info['currency_code'], $order_info['currency_value']),
+			);
+		}
+      ]]></add>
+    </operation>
+  </file>  
+  <!-- mail/order [END] -->
+<!-- CATALOG - CONTROLLER [END] -->
+<!-- CATALOG - LANGUAGE [START] -->
+  <!-- en-gb/en-gb [START] -->
+  <file path="catalog/language/en-gb/en-gb.php">
+    <operation>
+      <search><![CDATA[
+      <?php
+      ]]></search>
+      <add position="after"><![CDATA[
+			// Text
+			$_['text_pc_builder'] = 'PC Builder';
+			$_['text_saved_build'] = 'My Saved PC Build';
+      ]]></add>
+    </operation>
+  </file>  
+  <!-- en-gb/en-gb [END] -->
+<!-- CATALOG - LANGUAGE [END] -->
+<!-- CATALOG - MODEL [START] -->
+  <!-- account/order [START] -->
+  <file path="catalog/model/account/order.php">
+    <operation>
+      <search><![CDATA[
+      public function getOrderVouchers($order_id) {
+      ]]></search>
+      <add position="before"><![CDATA[
+			public function getOrderPcBuilders($order_id) {
+				$query = $this->db->query("SELECT * FROM `" . DB_PREFIX . "pc_builder_order` WHERE order_id = '" . (int)$order_id . "'");
+
+				return $query->rows;
+			}
+
+			public function getTotalOrderPcBuildersByOrderId($order_id) {
+				$query = $this->db->query("SELECT COUNT(*) AS total FROM `" . DB_PREFIX . "pc_builder_order` WHERE order_id = '" . (int)$order_id . "'");
+
+				return $query->row['total'];
+			}
+      ]]></add>
+    </operation>
+  </file>  
+  <!-- checkout/order [END] -->
+  <!-- checkout/order [START] -->
+  <file path="catalog/model/checkout/order.php">
+    <operation>
+      <search index="0"><![CDATA[
+      // Gift Voucher
+      ]]></search>
+      <add position="before"><![CDATA[
+			// PC Builders
+			if (isset($data['pc_builders'])) {
+				foreach ($data['pc_builders'] as $pc_builder) {
+					$this->db->query("INSERT INTO " . DB_PREFIX . "pc_builder_order SET order_id = '" . (int)$order_id . "', build = '" . $this->db->escape(json_encode($pc_builder['build'])) . "', pc_builder_categories = '" . $this->db->escape(json_encode($pc_builder['pc_builder_categories'])) . "', amount = '" . (float)$pc_builder['amount'] . "', weight = '" . (float)$pc_builder['weight'] . "'");
+
+					$pc_builder_order_id = $this->db->getLastId();
+				}
+			}
+      ]]></add>
+    </operation>
+    <operation>
+      <search index="1"><![CDATA[
+      // Gift Voucher
+      ]]></search>
+      <add position="before"><![CDATA[
+			// PC Builders
+			$this->db->query("DELETE FROM " . DB_PREFIX . "pc_builder_order WHERE order_id = '" . (int)$order_id . "'");
+
+			if (isset($data['pc_builders'])) {
+				foreach ($data['pc_builders'] as $pc_builder) {
+					$this->db->query("INSERT INTO " . DB_PREFIX . "pc_builder_order SET order_id = '" . (int)$order_id . "', build = '" . $this->db->escape($pc_builder['build']) . "', pc_builder_categories = '" . $this->db->escape($pc_builder['pc_builder_categories']) . "', amount = '" . (float)$pc_builder['amount'] . "', weight = '" . (float)$pc_builder['weight'] . "'");
+
+					$pc_builder_order_id = $this->db->getLastId();
+				}
+			}
+      ]]></add>
+    </operation>
+    <operation>
+      <search><![CDATA[
+      public function getOrderVouchers($order_id) {
+      ]]></search>
+      <add position="before"><![CDATA[
+			public function getOrderPcBuilders($order_id) {
+				$query = $this->db->query("SELECT * FROM " . DB_PREFIX . "pc_builder_order WHERE order_id = '" . (int)$order_id . "'");
+			
+				return $query->rows;
+			}
+      ]]></add>
+    </operation>
+	<operation>
+      <search><![CDATA[
+      // Update the DB with the new statuses
+      ]]></search>
+      <add position="before"><![CDATA[
+			// PC Builder stock subtraction
+			$pc_builder_order_products = $this->getOrderPcBuilders($order_id);
+
+			foreach ($pc_builder_order_products as $pc_builder_order_product) {
+				$pc_builder_build = json_decode($pc_builder_order_product['build'], true);
+
+				foreach ($pc_builder_build as $key => $value) {
+					$this->db->query("UPDATE " . DB_PREFIX . "product SET quantity = (quantity - 1) WHERE product_id = '" . (int)$value['product_id'] . "' AND subtract = '1'");
+
+					foreach ($value['option'] as $product_option_id => $option_value) {
+						$pc_builder_option_query = $this->db->query("SELECT po.product_option_id, po.option_id, o.type FROM " . DB_PREFIX . "product_option po LEFT JOIN `" . DB_PREFIX . "option` o ON (po.option_id = o.option_id) WHERE po.product_option_id = '" . (int)$product_option_id . "' AND po.product_id = '" . (int)$value['product_id'] . "'");
+
+						if ($pc_builder_option_query->num_rows) {
+							if ($pc_builder_option_query->row['type'] == 'select' || $pc_builder_option_query->row['type'] == 'radio') {
+								$this->db->query("UPDATE " . DB_PREFIX . "product_option_value SET quantity = (quantity - 1) WHERE product_option_value_id = '" . (int)$option_value . "' AND subtract = '1'");
+							} elseif ($pc_builder_option_query->row['type'] == 'checkbox' && is_array($option_value)) {
+								foreach ($option_value as $product_option_value_id) {
+									$this->db->query("UPDATE " . DB_PREFIX . "product_option_value SET quantity = (quantity - 1) WHERE product_option_value_id = '" . (int)$product_option_value_id . "' AND subtract = '1'");
+								}
+							}
+						}
+					}
+				}
+			
+      
+				// Add commission if sale is linked to affiliate referral.
+				if ($order_info['affiliate_id'] && $this->config->get('config_affiliate_auto')) {
+					$this->load->model('account/customer');
+
+					if (!$this->model_account_customer->getTotalTransactionsByOrderId($order_id)) {
+						$this->model_account_customer->addTransaction($order_info['affiliate_id'], $this->language->get('text_order_id') . ' #' . $order_id, $order_info['commission'], $order_id);
+					}
+				}
+			}
+      ]]></add>
+    </operation>
+  </file>  
+  <!-- checkout/order [END] -->
+<!-- CATALOG - MODEL [END] -->
+<!-- CATALOG - THEME [START] -->
+  <!-- account/order_info [START] -->
+  <file path="catalog/view/theme/default/template/account/order_info.twig">
+    <operation>
+      <search><![CDATA[
+      {% for voucher in vouchers %}
+      ]]></search>
+      <add position="before"><![CDATA[
+      {% for pc_builder in pc_builders %}
+      <tr>
+        <td class="text-left">
+        	<h3 style="margin-top: 0px;">{{ text_pc_builder }}</h3>
+        	<div>
+        		{% for build in pc_builder.pc_builder_categories %}
+        			<div style="margin-bottom: 15px;">
+		        		<h4>{{ build.name }}</h4>
+		        		{% for pc_builder_component in build.pc_builder_components %}
+			        		<div class="row" style="margin-bottom: 5px;">
+			        		<div class="col-sm-4">{{ pc_builder_component.name }}</div>
+			        		<div class="col-sm-8">
+			        			{% if pc_builder_component.product %}
+				        			<div>{{ pc_builder_component.product.name }}</div>
+				        			{% if pc_builder_component.product.option %}
+				        				{% for product_option in pc_builder_component.product.option %}
+				        				<div class="small">- {{ product_option.name }}: {{ product_option.value }}</div>
+				        				{% endfor %}
+				        			{% endif %}
+			        			{% endif %}
+			        		</div>
+			        		</div>
+		        		{% endfor %}
+	        		</div>
+        		{% endfor %}
+        	</div>
+        </td>
+        <td class="text-left"></td>
+        <td class="text-right">1</td>
+        <td class="text-right">{{ pc_builder.amount }}</td>
+        <td class="text-right">{{ pc_builder.amount }}</td>
+        {% if products %}
+        <td></td>
+        {% endif %}
+      </tr>
+      {% endfor %}
+      ]]></add>
+    </operation>
+  </file>  
+  <!-- account/order_info [END] -->
+  <!-- common/header [START] -->
+  <file path="catalog/view/theme/default/template/common/header.twig">
+    <operation>
+      <search><![CDATA[
+      </head>
+      ]]></search>
+      <add position="before"><![CDATA[
+		<script src="catalog/view/javascript/pc_builder.js?v=1.0.1" type="text/javascript"></script>
+      ]]></add>
+    </operation>
+    <operation>
+      <search><![CDATA[
+      <li><a href="{{ account }}">{{ text_account }}</a></li>
+      ]]></search>
+      <add position="after"><![CDATA[
+			<li><a href="{{ pc_builder_build }}">{{ text_saved_build }}</a></li>
+      ]]></add>
+    </operation>
+    <operation>
+      <search><![CDATA[
+      <li><a href="{{ checkout }}" title="{{ text_checkout }}"><i class="fa fa-share"></i> <span class="hidden-xs hidden-sm hidden-md">{{ text_checkout }}</span></a></li>
+      ]]></search>
+      <add position="after"><![CDATA[
+			<li><a href="{{ pc_builder }}" title="{{ text_pc_builder }}"><i class="fa fa-puzzle-piece"></i> <span class="hidden-xs hidden-sm hidden-md">{{ text_pc_builder }}</span></a></li>
+      ]]></add>
+    </operation>
+  </file>  
+  <!-- common/header [END] -->
+  <!-- common/cart [START] -->
+  <file path="catalog/view/theme/default/template/common/cart.twig">
+    <operation>
+      <search><![CDATA[
+      {% if products or vouchers %}
+      ]]></search>
+      <add position="replace"><![CDATA[
+			{% if products or vouchers or pc_builders %}
+      ]]></add>
+    </operation>
+    <operation>
+      <search><![CDATA[
+      {% for voucher in vouchers %}
+      ]]></search>
+      <add position="before"><![CDATA[
+      {% for pc_builder in pc_builders %}
+      <tr>
+        <td class="text-center"></td>
+        <td class="text-left">
+        	<h3 style="margin-top: 0px;">{{ text_pc_builder }}</h3>
+        	<div>
+        		<tr v-for="(pc_builder, index) in pc_builders">
+          <td></td>
+          <td class="text-left">
+            <h4 style="margin-top: 0px;">PC Builder</h4>
+            <div>
+              <template v-for="build in pc_builder.build">
+                <br/>
+                <div v-html="build.name"></div>
+                <small v-for="pc_builder_component in build.pc_builder_components">
+                  <div class="row" style="margin-bottom: 5px;">
+                    <div class="col-sm-4" v-html="pc_builder_component.name + ': '"></div>
+                    <div class="col-sm-8">
+                      <div v-if="pc_builder_component.product">
+                        <div v-html="pc_builder_component.product.name"></div>
+                        <div v-if="pc_builder_component.product.option">
+                          <div v-for="product_option in pc_builder_component.product.option">
+                            <small v-html="'- ' + product_option.name + ': ' + product_option.value"></small>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </small>
+              </template>
+        	</div>
+        </td>
+        <td class="text-right">x&nbsp;1</td>
+        <td class="text-right">{{ pc_builder.amount }}</td>
+        <td class="text-center text-danger"><button type="button" onclick="pc_builder.remove('{{ pc_builder.key }}');" title="{{ button_remove }}" class="btn btn-danger btn-xs"><i class="fa fa-times"></i></button></td>
+      </tr>
+      ]]></add>
+    </operation>
+  </file>  
+  <!-- common/cart [END] -->
+  <!-- checkout/cart [START] -->
+  <file path="catalog/view/theme/default/template/checkout/cart.twig">
+    <operation>
+      <search><![CDATA[
+      {% for voucher in vouchers %}
+      ]]></search>
+      <add position="before"><![CDATA[
+      {% for pc_builder in pc_builders %}
+      <tr>
+        <td></td>
+        <td class="text-left">
+        	<h3 style="margin-top: 0px;">{{ text_pc_builder }}</h3>
+        	<div>
+        		{% for build in pc_builder.build %}
+        			<div style="margin-bottom: 15px;">
+		        		<h4>{{ build.name }}</h4>
+		        		{% for pc_builder_component in build.pc_builder_components %}
+			        		<div class="row" style="margin-bottom: 5px;">
+			        		<div class="col-sm-4">&middot; {{ pc_builder_component.name }}</div>
+			        		<div class="col-sm-8">
+			        			{% if pc_builder_component.product %}
+				        			<div>{{ pc_builder_component.product.name }}</div>
+				        			{% if pc_builder_component.product.option %}
+				        				{% for product_option in pc_builder_component.product.option %}
+				        				<div class="small">- {{ product_option.name }}: {{ product_option.value }}</div>
+				        				{% endfor %}
+				        			{% endif %}
+			        			{% endif %}
+			        		</div>
+			        		</div>
+		        		{% endfor %}
+	        		</div>
+        		{% endfor %}
+        	</div>
+      	</td>
+        <td class="text-left">{{ text_pc_builder }}</td>
+        <td class="text-left"><div class="input-group btn-block" style="max-width: 200px;">
+            <input type="text" name="" value="1" size="1" disabled="disabled" class="form-control" />
+            <span class="input-group-btn">
+            <button type="button" data-toggle="tooltip" title="{{ button_remove }}" class="btn btn-danger" onclick="pc_builder.remove('{{ pc_builder.key }}');"><i class="fa fa-times-circle"></i></button>
+            </span></div></td>
+        <td class="text-right">{{ pc_builder.amount }}</td>
+        <td class="text-right">{{ pc_builder.amount }}</td>
+      </tr>
+      {% endfor %}
+      ]]></add>
+    </operation>
+  </file>
+  <!-- checkout/cart [END] -->
+  <!-- checkout/confirm [START] -->
+  <file path="catalog/view/theme/default/template/checkout/confirm.twig">
+    <operation>
+      <search><![CDATA[
+      {% for voucher in vouchers %}
+      ]]></search>
+      <add position="before"><![CDATA[
+	    {% for pc_builder in pc_builders %}
+	    <tr>
+	      <td class="text-left">
+        	<h3 style="margin-top: 0px;">{{ text_pc_builder }}</h3>
+        	<div>
+        		{% for build in pc_builder.build %}
+        			<div style="margin-bottom: 15px;">
+		        		<h4>{{ build.name }}</h4>
+		        		{% for pc_builder_component in build.pc_builder_components %}
+			        		<div class="row" style="margin-bottom: 5px;">
+			        		<div class="col-sm-4">&middot; {{ pc_builder_component.name }}</div>
+			        		<div class="col-sm-8">
+			        			{% if pc_builder_component.product %}
+				        			<div>{{ pc_builder_component.product.name }}</div>
+				        			{% if pc_builder_component.product.option %}
+				        				{% for product_option in pc_builder_component.product.option %}
+				        				<div class="small">- {{ product_option.name }}: {{ product_option.value }}</div>
+				        				{% endfor %}
+				        			{% endif %}
+			        			{% endif %}
+			        		</div>
+			        		</div>
+		        		{% endfor %}
+	        		</div>
+        		{% endfor %}
+        	</div>
+	      </td>
+	      <td class="text-left">{{ text_pc_builder }}</td>
+	      <td class="text-right">1</td>
+	      <td class="text-right">{{ pc_builder.amount }}</td>
+	      <td class="text-right">{{ pc_builder.amount }}</td>
+	    </tr>
+	    {% endfor %}
+      ]]></add>
+    </operation>
+  </file>  
+  <!-- checkout/confirm [END] -->
+  <!-- mail/order_add [START] -->
+  <file path="catalog/view/theme/default/template/mail/order_add.twig">
+    <operation>
+      <search><![CDATA[
+      {% for voucher in vouchers %}
+      ]]></search>
+      <add position="before"><![CDATA[
+		{% for pc_builder in pc_builders %}
+		<tr>
+			<td style="font-size: 12px;	border-right: 1px solid #DDDDDD; border-bottom: 1px solid #DDDDDD; text-align: left; padding: 7px;">
+				<h3 style="margin-top: 0px;">{{ text_pc_builder }}</h3>
+				<div>
+					{% for build in pc_builder.pc_builder_categories %}
+						<div style="margin-bottom: 15px;">
+							<h4>{{ build.name }}</h4>
+							{% for pc_builder_component in build.pc_builder_components %}
+								<div class="row" style="margin-bottom: 5px;">
+								<div class="col-sm-4">{{ pc_builder_component.name }}</div>
+								<div class="col-sm-8">
+									{% if pc_builder_component.product %}
+										<div>{{ pc_builder_component.product.name }}</div>
+										{% if pc_builder_component.product.option %}
+											{% for product_option in pc_builder_component.product.option %}
+											<div class="small">- {{ product_option.name }}: {{ product_option.value }}</div>
+											{% endfor %}
+										{% endif %}
+									{% endif %}
+								</div>
+								</div>
+							{% endfor %}
+						</div>
+					{% endfor %}
+				</div>
+			</td>
+			<td style="font-size: 12px;	border-right: 1px solid #DDDDDD; border-bottom: 1px solid #DDDDDD; text-align: left; padding: 7px;"></td>
+			<td style="font-size: 12px;	border-right: 1px solid #DDDDDD; border-bottom: 1px solid #DDDDDD; text-align: right; padding: 7px;">1</td>
+			<td style="font-size: 12px;	border-right: 1px solid #DDDDDD; border-bottom: 1px solid #DDDDDD; text-align: right; padding: 7px;">{{ pc_builder.amount }}</td>
+			<td style="font-size: 12px;	border-right: 1px solid #DDDDDD; border-bottom: 1px solid #DDDDDD; text-align: right; padding: 7px;">{{ pc_builder.amount }}</td>
+		</tr>
+		{% endfor %}
+      ]]></add>
+    </operation>
+  </file>  
+  <!-- mail/order_add [END] -->
+  <!-- mail/order_alert [START] -->
+  <file path="catalog/view/theme/default/template/mail/order_alert.twig">
+    <operation>
+      <search><![CDATA[
+      {% if vouchers %}
+      ]]></search>
+      <add position="before"><![CDATA[
+		{% if pc_builders %}
+		{% for pc_builder in pc_builders %}
+		1x {{ text_pc_builder }} {{ pc_builder.amount }}
+		{% for build in pc_builder.pc_builder_categories %}
+		{{ build.name }}
+		{% for pc_builder_component in build.pc_builder_components %}
+		{{ pc_builder_component.name }}
+		{% if pc_builder_component.product %}
+		{{ pc_builder_component.product.name }}
+		{% if pc_builder_component.product.option %}
+		{% for product_option in pc_builder_component.product.option %}
+		- {{ product_option.name }}: {{ product_option.value }}
+		{% endfor %}
+		{% endif %}
+		{% endif %}
+		{% endfor %}
+		{% endfor %}
+		{% endfor %}
+		{% endif %}
+      ]]></add>
+    </operation>
+  </file>  
+  <!-- mail/order_alert [END] -->
+<!-- CATALOG - THEME [END] -->
+<!-- SYSTEM - LIBRARY [START] -->
+  <!-- cart/cart [START] -->
+  <file path="system/library/cart/cart.php">
+    <operation>
+      <search><![CDATA[
+      return $total;
+      ]]></search>
+      <add position="before"><![CDATA[
+    	if (isset($this->session->data['pc_builders'])) {
+				foreach ($this->session->data['pc_builders'] as $pc_builder) {
+					$total += $pc_builder['amount'];
+				}
+    	}
+      ]]></add>
+    </operation>
+    <operation>
+      <search><![CDATA[
+      return $weight;
+      ]]></search>
+      <add position="before"><![CDATA[
+    	if (isset($this->session->data['pc_builders'])) {
+				foreach ($this->session->data['pc_builders'] as $pc_builder) {
+					$weight += $pc_builder['weight'];
+				}
+    	}
+      ]]></add>
+    </operation>
+    <operation>
+      <search><![CDATA[
+      return false;
+      ]]></search>
+      <add index="1" position="before"><![CDATA[
+    	if (isset($this->session->data['pc_builders'])) {
+			return true;
+    	}
+      ]]></add>
+    </operation>
+	<operation>
+      <search><![CDATA[foreach ($this->data as $key => $value) {]]></search>
+      <add position="before"><![CDATA[
+        // PC Builder Virtual Product Injection
+        if (isset($this->session->data['pc_builders'])) {
+            foreach ($this->session->data['pc_builders'] as $builder_key => $pc_builder) {
+                $this->data[$builder_key] = [
+                    'product_id' => 0,
+                    'quantity'   => 1,
+                    'pc_builder' => $pc_builder
+                ];
+            }
+        }
+      ]]></add>
+    </operation>
+
+    <operation>
+      <search><![CDATA[foreach ($this->data as $key => $value) {]]></search>
+      <add position="after"><![CDATA[
+        if ($value['product_id'] == 0 && isset($value['pc_builder'])) {
+            $product_data[] = [
+                'cart_id'     => $key,
+                'product_id'  => 0,
+                'name'        => 'Custom PC Build',
+                'model'       => '',
+                'option'      => [],
+                'quantity'    => 1,
+                'stock'       => true,
+                'price'       => 0.00,
+                'total'       => 0.00,
+                'tax_class_id'=> 0,
+                'reward'      => '',
+                'thumb'       => '',
+                'pc_builder'  => $value['pc_builder'],
+            ];
+            continue;
+        }
+      ]]></add>
+    </operation>
+  </file> 
+
+    <!-- optimize Pc Builder Plugin according to the journal theme -->
+	
+	  <!-- checkout/order [END] -->
+  <!-- checkout/order [START] -->
+  <file path="catalog/model/journal3/order.php">
+    <operation>
+      <search index="0"><![CDATA[
+      // Gift Voucher
+      ]]></search>
+      <add position="before"><![CDATA[
+			// PC Builders
+      if (isset($data['pc_builders'])) {
+        foreach ($data['pc_builders'] as $pc_builder) {
+          $this->db->query("INSERT INTO " . DB_PREFIX . "pc_builder_order SET order_id = '" . (int)$order_id . "', build = '" . $this->db->escape(json_encode($pc_builder['build'])) . "', pc_builder_categories = '" . $this->db->escape(json_encode($pc_builder['pc_builder_categories'])) . "', amount = '" . (float)$pc_builder['amount'] . "', weight = '" . (float)$pc_builder['weight'] . "'");
+
+          $pc_builder_order_id = $this->db->getLastId();
+        }
+      }
+      ]]></add>
+    </operation>
+    <operation>
+      <search index="1"><![CDATA[
+      // Gift Voucher
+      ]]></search>
+      <add position="before"><![CDATA[
+			// PC Builders
+      $this->db->query("DELETE FROM " . DB_PREFIX . "pc_builder_order WHERE order_id = '" . (int)$order_id . "'");
+
+      if (isset($data['pc_builders'])) {
+        foreach ($data['pc_builders'] as $pc_builder) {
+          $this->db->query("INSERT INTO " . DB_PREFIX . "pc_builder_order SET order_id = '" . (int)$order_id . "', build = '" . $this->db->escape(json_encode($pc_builder['build'])) . "', pc_builder_categories = '" . $this->db->escape(json_encode($pc_builder['pc_builder_categories'])) . "', amount = '" . (float)$pc_builder['amount'] . "', weight = '" . (float)$pc_builder['weight'] . "'");
+
+          $pc_builder_order_id = $this->db->getLastId();
+        }
+      }
+      ]]></add>
+    </operation>
+    <operation>
+      <search><![CDATA[
+     private function getOrder($order_id) {
+      ]]></search>
+      <add position="before"><![CDATA[
+			public function getOrderPcBuilders($order_id) {
+				$query = $this->db->query("SELECT * FROM " . DB_PREFIX . "pc_builder_order WHERE order_id = '" . (int)$order_id . "'");
+			
+				return $query->rows;
+			}
+      ]]></add>
+    </operation>
+  </file>
+  <!-- checkout/order [END] -->
+  
+  <!-- checkout/model [START] -->
+  <file path="catalog/model/journal3/checkout.php">
+    <operation>
+      <search><![CDATA[
+      // vouchers
+      ]]></search>
+      <add position="before"><![CDATA[
+			// PC Builder
+      $data['pc_builders'] = array();
+
+      if (!empty($this->session->data['pc_builders'])) {
+        $this->load->model('extension/pc_builder/pc_builder_category');
+        $this->load->model('extension/pc_builder/pc_builder_component');
+        $this->load->model('extension/pc_builder/pc_builder_product');
+        $this->load->model('extension/pc_builder/pc_builder_build');
+
+        $this->load->model('tool/image');
+        $this->load->model('tool/upload');
+
+        $url = '';
+
+        foreach ($this->session->data['pc_builders'] as $pc_builder) {
+          $pc_builder_categories_data = array();
+
+          $pc_builder_categories = $this->model_extension_pc_builder_pc_builder_category->getPcBuilderCategories();
+
+          foreach ($pc_builder_categories as $pc_builder_category) {
+            // Get PC Builder Components
+            $pc_builder_components_data = array();
+
+            $filter_data = array(
+              'filter_category_id' => $pc_builder_category['pc_builder_category_id'],
+            );
+
+            $pc_builder_components = $this->model_extension_pc_builder_pc_builder_component->getPcBuilderComponents($filter_data);
+
+            foreach ($pc_builder_components as $pc_builder_component) {
+              if ($pc_builder_component['image']) {
+                $thumb = $this->model_tool_image->resize($pc_builder_component['image'], 32, 32);
+              } else {
+                $thumb = $this->model_tool_image->resize('placeholder.png', 32, 32);
+              }
+
+              $pc_builder_selected_products = $pc_builder['build'];
+
+              if (isset($pc_builder_selected_products[$pc_builder_component['pc_builder_component_id']]['product_id'])) {
+                (float)$option_price = 0;
+                $option_points = 0;
+                $option_weight = 0;
+
+                $product_info = $this->model_extension_pc_builder_pc_builder_product->getProduct($pc_builder_selected_products[$pc_builder_component['pc_builder_component_id']]['product_id']);
+
+                if ($product_info) {
+                  if ($product_info['image']) {
+                    $image = $this->model_tool_image->resize($product_info['image'], 32, 32);
+                  } else {
+                    $image = '';
+                  }
+
+                  $option_data = array();
+
+                  foreach ($pc_builder_selected_products[$pc_builder_component['pc_builder_component_id']]['option'] as $product_option_id => $value) {
+
+                    // Get Selected Product Option Data
+                    $option = $this->model_extension_pc_builder_pc_builder_product->getSelectedProductOptionData($product_option_id, $value, $product_info['product_id'], 1);
+
+                    if ($option) {
+                      if ($option['type'] != 'file') {
+                        $value = $option['value'];
+                      } else {
+                        $upload_info = $this->model_tool_upload->getUploadByCode($option['value']);
+
+                        if ($upload_info) {
+                          $value = $upload_info['name'];
+                        } else {
+                          $value = '';
+                        }
+                      }
+
+                      $option_data[] = array(
+                        'name'          => $option['name'],
+                        'value'         => (utf8_strlen($value) > 20 ? utf8_substr($value, 0, 20) . '..' : $value),
+                        'type'          => $option['type'],
+                        'quantity'      => $option['quantity'],
+                        'subtract'      => $option['subtract'],
+                        'price'         => $option['price'],
+                        'price_prefix'  => $option['price_prefix'],
+                        'points'        => $option['points'],
+                        'points_prefix' => $option['points_prefix'],
+                        'weight'        => $option['weight'],
+                        'weight_prefix' => $option['weight_prefix'],
+                      );
+
+                      if ($option['price_prefix'] == '+') {
+                        $option_price += $option['price'];
+                      } elseif ($option['price_prefix'] == '-') {
+                        $option_price -= $option['price'];
+                      }
+
+                      if ($option['points_prefix'] == '+') {
+                        $option_points += $option['points'];
+                      } elseif ($option['points_prefix'] == '-') {
+                        $option_points -= $option['points'];
+                      }
+
+                      if ($option['weight_prefix'] == '+') {
+                        $option_weight += $option['weight'];
+                      } elseif ($option['weight_prefix'] == '-') {
+                        $option_weight -= $option['weight'];
+                      }
+                    }
+                  }
+
+                  // Display prices
+                  if ($this->customer->isLogged() || !$this->config->get('config_customer_price')) {
+                    if (!is_null($product_info['special']) && (float)$product_info['special'] >= 0) {
+                      $special = (float)$product_info['special'];
+                    } else {
+                      $special = false;
+                    }
+
+                    if ($special) {
+                      $unit_price = $this->tax->calculate(((float)$special + (float)$option_price), $product_info['tax_class_id'], $this->config->get('config_tax'));
+                    } else {
+                      $unit_price = $this->tax->calculate(((float)$product_info['price'] + (float)$option_price), $product_info['tax_class_id'], $this->config->get('config_tax'));
+                    }
+
+                    $price = $this->currency->format($unit_price, $this->session->data['currency']);
+                    $total = $this->currency->format($unit_price * 1, $this->session->data['currency']);
+                  } else {
+                    $price = false;
+                    $total = false;
+                  }
+
+                  $product_data = array(
+                    'product_id' => $product_info['product_id'],
+                    'name' => $product_info['name'],
+                    'image' => $image,
+                    'option' => $option_data,
+                    'price' => $price,
+                  );
+                } else {
+                  $product_data = array();
+                }
+              } else {
+                $product_data = array();
+              }
+
+              $pc_builder_components_data[] = array(
+                'pc_builder_component_id' => $pc_builder_component['pc_builder_component_id'],
+                'name' => $pc_builder_component['name'],
+                'thumb' => $thumb,
+                'product' => $product_data,
+                'required' => $pc_builder_component['required'],
+                'href' => $this->url->link('extension/pc_builder/pc_builder_search', 'pc_builder_component_id=' . $pc_builder_component['pc_builder_component_id'] . $url)
+              );
+            }
+
+            $pc_builder_categories_data[] = array(
+              'pc_builder_category_id' => $pc_builder_category['pc_builder_category_id'],
+              'name' => $pc_builder_category['name'],
+              'pc_builder_components' => $pc_builder_components_data,
+            );
+          }
+
+          $data['pc_builders'][] = array(
+            'build'                      => $pc_builder['build'],
+            'pc_builder_categories'      => $pc_builder_categories_data,
+            'amount'                     => $pc_builder['amount'],
+            'weight'                     => $pc_builder['weight'],
+          );
+        }
+      }
+      ]]></add>
+    </operation>
+  </file>
+  <!-- checkout/order [END] -->
+
+<!-- checkout/cart [END] -->
+  <!-- checkout/checkout [START] -->
+  <file path="catalog/controller/journal3/checkout.php">
+    <operation>
+      <search><![CDATA[
+      'error_warning'       => $this->language->get('error_stock'),
+      ]]></search>
+      <add position="after"><![CDATA[
+			'pc_builders'         =>$data['pc_builders'],
+      ]]></add>
+    </operation>
+	<operation>
+      <search><![CDATA[
+      if ((!$this->cart->hasProducts() && empty($this->session->data['vouchers'])) || (!$this->cart->hasStock() && !$this->config->get('config_stock_checkout'))) {
+      ]]></search>
+      <add position="replace"><![CDATA[
+			if ((!$this->cart->hasProducts() && empty($this->session->data['vouchers']) && empty($this->session->data['pc_builders'])) || (!$this->cart->hasStock() && !$this->config->get('config_stock_checkout'))) {
+      ]]></add>
+    </operation>
+	<operation>
+      <search><![CDATA[
+      $data['coupon_voucher_reward_block'] = $this->load->view('journal3/checkout/coupon_voucher_reward', array(
+      ]]></search>
+      <add position="before"><![CDATA[
+												// PC Builder
+		
+			$data['pc_builders'] = array();
+
+			if (!empty($this->session->data['pc_builders'])) {
+				$this->load->model('extension/pc_builder/pc_builder_category');
+				$this->load->model('extension/pc_builder/pc_builder_component');
+				$this->load->model('extension/pc_builder/pc_builder_product');
+				$this->load->model('extension/pc_builder/pc_builder_build');
+
+				$this->load->model('tool/image');
+				$this->load->model('tool/upload');
+
+				$url = '';
+
+				foreach ($this->session->data['pc_builders'] as $pc_builder) {
+					$pc_builder_categories_data = array();
+
+					$pc_builder_categories = $this->model_extension_pc_builder_pc_builder_category->getPcBuilderCategories();
+
+					foreach ($pc_builder_categories as $pc_builder_category) {
+						// Get PC Builder Components
+						$pc_builder_components_data = array();
+
+						$filter_data = array(
+							'filter_category_id' => $pc_builder_category['pc_builder_category_id'],
+						);
+
+						$pc_builder_components = $this->model_extension_pc_builder_pc_builder_component->getPcBuilderComponents($filter_data);
+
+						foreach ($pc_builder_components as $pc_builder_component) {
+							if ($pc_builder_component['image']) {
+								$thumb = $this->model_tool_image->resize($pc_builder_component['image'], 32, 32);
+							} else {
+								$thumb = $this->model_tool_image->resize('placeholder.png', 32, 32);
+							}
+
+							$pc_builder_selected_products = $pc_builder['build'];
+
+							if (isset($pc_builder_selected_products[$pc_builder_component['pc_builder_component_id']]['product_id'])) {
+								(float)$option_price = 0;
+								$option_points = 0;
+								$option_weight = 0;
+
+								$product_info = $this->model_extension_pc_builder_pc_builder_product->getProduct($pc_builder_selected_products[$pc_builder_component['pc_builder_component_id']]['product_id']);
+
+								if ($product_info) {
+									if ($product_info['image']) {
+										$image = $this->model_tool_image->resize($product_info['image'], 32, 32);
+									} else {
+										$image = '';
+									}
+
+									$option_data = array();
+                                  if (isset($pc_builder_selected_products[$pc_builder_component['pc_builder_component_id']]['option']) & !empty($pc_builder_selected_products[$pc_builder_component['pc_builder_component_id']]['option'])) {
+									foreach ($pc_builder_selected_products[$pc_builder_component['pc_builder_component_id']]['option'] as $product_option_id => $value) {
+
+										// Get Selected Product Option Data
+										$option = $this->model_extension_pc_builder_pc_builder_product->getSelectedProductOptionData($product_option_id, $value, $product_info['product_id'], 1);
+
+										if ($option) {
+											if ($option['type'] != 'file') {
+												$value = $option['value'];
+											} else {
+												$upload_info = $this->model_tool_upload->getUploadByCode($option['value']);
+
+												if ($upload_info) {
+													$value = $upload_info['name'];
+												} else {
+													$value = '';
+												}
+											}
+
+											$option_data[] = array(
+												'name'          => $option['name'],
+												'value'         => (utf8_strlen($value) > 20 ? utf8_substr($value, 0, 20) . '..' : $value),
+												'type'          => $option['type'],
+												'quantity'      => $option['quantity'],
+												'subtract'      => $option['subtract'],
+												'price'         => $option['price'],
+												'price_prefix'  => $option['price_prefix'],
+												'points'        => $option['points'],
+												'points_prefix' => $option['points_prefix'],
+												'weight'        => $option['weight'],
+												'weight_prefix' => $option['weight_prefix'],
+											);
+
+											if ($option['price_prefix'] == '+') {
+												$option_price += $option['price'];
+											} elseif ($option['price_prefix'] == '-') {
+												$option_price -= $option['price'];
+											}
+
+											if ($option['points_prefix'] == '+') {
+												$option_points += $option['points'];
+											} elseif ($option['points_prefix'] == '-') {
+												$option_points -= $option['points'];
+											}
+
+											if ($option['weight_prefix'] == '+') {
+												$option_weight += $option['weight'];
+											} elseif ($option['weight_prefix'] == '-') {
+												$option_weight -= $option['weight'];
+											}
+										}
+									}
+								  }
+
+									// Display prices
+									if ($this->customer->isLogged() || !$this->config->get('config_customer_price')) {
+										if (!is_null($product_info['special']) && (float)$product_info['special'] >= 0) {
+											$special = (float)$product_info['special'];
+										} else {
+											$special = false;
+										}
+
+										if ($special) {
+											$unit_price = $this->tax->calculate(((float)$special + (float)$option_price), $product_info['tax_class_id'], $this->config->get('config_tax'));
+										} else {
+											$unit_price = $this->tax->calculate(((float)$product_info['price'] + (float)$option_price), $product_info['tax_class_id'], $this->config->get('config_tax'));
+										}
+
+										$price = $this->currency->format($unit_price, $this->session->data['currency']);
+										$total = $this->currency->format($unit_price * 1, $this->session->data['currency']);
+									} else {
+										$price = false;
+										$total = false;
+									}
+
+									$product_data = array(
+										'product_id' => $product_info['product_id'],
+										'name' => $product_info['name'],
+										'image' => $image,
+										'option' => $option_data,
+										'price' => $price,
+									);
+								} else {
+									$product_data = array();
+								}
+							} else {
+								$product_data = array();
+							}
+
+							$pc_builder_components_data[] = array(
+								'pc_builder_component_id' => $pc_builder_component['pc_builder_component_id'],
+								'name' => $pc_builder_component['name'],
+								'thumb' => $thumb,
+								'product' => $product_data,
+								'required' => $pc_builder_component['required'],
+								'href' => $this->url->link('extension/pc_builder/pc_builder_search', 'pc_builder_component_id=' . $pc_builder_component['pc_builder_component_id'] . $url)
+							);
+						}
+
+						$pc_builder_categories_data[] = array(
+							'pc_builder_category_id' => $pc_builder_category['pc_builder_category_id'],
+							'name' => $pc_builder_category['name'],
+							'pc_builder_components' => $pc_builder_components_data,
+						);
+					}
+
+					$data['pc_builders'][] = array(
+						'build'  => $pc_builder_categories_data,
+						'amount' => $this->currency->format($pc_builder['amount'], $this->session->data['currency']),
+						'weight' => $this->weight->format($pc_builder['weight'], $this->config->get('config_weight_class_id'), $this->language->get('decimal_point'), $this->language->get('thousand_point')),
+					);
+				}
+			}
+		
+		//ended by Pc Builder
+      ]]></add>
+    </operation>
+
+  </file>  
+  <!-- checkout/checkout [END] -->
+	
+	<!-- CATALOG - MODEL [END] -->
+<!-- CATALOG - THEME [START] -->
+  <!-- account/order_info [START] -->
+  <file path="catalog/view/theme/journal3/template/account/order_info.twig">
+    <operation>
+      <search><![CDATA[
+      {% for voucher in vouchers %}
+      ]]></search>
+      <add position="before"><![CDATA[
+      {% for pc_builder in pc_builders %}
+      <tr>
+        <td class="text-left">
+        	<h3 style="margin-top: 0px;">{{ text_pc_builder }}</h3>
+        	<div>
+        		{% for build in pc_builder.pc_builder_categories %}
+        			<div style="margin-bottom: 15px;">
+		        		<h4>{{ build.name }}</h4>
+		        		{% for pc_builder_component in build.pc_builder_components %}
+			        		<div class="row" style="margin-bottom: 5px;">
+			        		<div class="col-sm-4">{{ pc_builder_component.name }}</div>
+			        		<div class="col-sm-8">
+			        			{% if pc_builder_component.product %}
+				        			<div>{{ pc_builder_component.product.name }}</div>
+				        			{% if pc_builder_component.product.option %}
+				        				{% for product_option in pc_builder_component.product.option %}
+				        				<div class="small">- {{ product_option.name }}: {{ product_option.value }}</div>
+				        				{% endfor %}
+				        			{% endif %}
+			        			{% endif %}
+			        		</div>
+			        		</div>
+		        		{% endfor %}
+	        		</div>
+        		{% endfor %}
+        	</div>
+        </td>
+        <td class="text-left"></td>
+        <td class="text-right">1</td>
+        <td class="text-right">{{ pc_builder.amount }}</td>
+        <td class="text-right">{{ pc_builder.amount }}</td>
+        {% if products %}
+        <td></td>
+        {% endif %}
+      </tr>
+      {% endfor %}
+      ]]></add>
+    </operation>
+  </file>  
+  <!-- account/order_info [END] -->
+  <!-- common/header [START] -->
+  <file path="catalog/view/theme/journal3/template/common/header.twig">
+    <operation>
+      <search><![CDATA[
+      </head>
+      ]]></search>
+      <add position="before"><![CDATA[
+		<script src="catalog/view/javascript/pc_builder.js?v=1.0.1" type="text/javascript"></script>
+      ]]></add>
+    </operation>
+    <operation>
+      <search><![CDATA[
+      <li><a href="{{ account }}">{{ text_account }}</a></li>
+      ]]></search>
+      <add position="after"><![CDATA[
+			<li><a href="{{ pc_builder_build }}">{{ text_saved_build }}</a></li>
+      ]]></add>
+    </operation>
+    <operation>
+      <search><![CDATA[
+      <li><a href="{{ checkout }}" title="{{ text_checkout }}"><i class="fa fa-share"></i> <span class="hidden-xs hidden-sm hidden-md">{{ text_checkout }}</span></a></li>
+      ]]></search>
+      <add position="after"><![CDATA[
+			<li><a href="{{ pc_builder }}" title="{{ text_pc_builder }}"><i class="fa fa-puzzle-piece"></i> <span class="hidden-xs hidden-sm hidden-md">{{ text_pc_builder }}</span></a></li>
+      ]]></add>
+    </operation>
+  </file>  
+  <!-- common/header [END] -->
+  <!-- common/cart [START] -->
+  <file path="catalog/view/theme/journal3/template/common/cart.twig">
+    <operation>
+      <search><![CDATA[
+      {% if products or vouchers %}
+      ]]></search>
+      <add position="replace"><![CDATA[
+			{% if products or vouchers or pc_builders %}
+      ]]></add>
+    </operation>
+    <operation>
+      <search><![CDATA[
+      {% for voucher in vouchers %}
+      ]]></search>
+      <add position="before"><![CDATA[
+      {% for pc_builder in pc_builders %}
+      <tr>
+        <td class="text-center"></td>
+        <td class="text-left">
+        	<h3 style="margin-top: 0px;">{{ text_pc_builder }}</h3>
+        	<div>
+        		{% for build in pc_builder.build %}
+        			<div style="margin-bottom: 15px;">
+		        		<h4>{{ build.name }}</h4>
+		        		{% for pc_builder_component in build.pc_builder_components %}
+			        		<div class="row" style="margin-bottom: 5px;">
+			        		<div class="col-sm-4">{{ pc_builder_component.name }}</div>
+			        		<div class="col-sm-8">
+			        			{% if pc_builder_component.product %}
+				        			<div>{{ pc_builder_component.product.name }}</div>
+				        			{% if pc_builder_component.product.option %}
+				        				{% for product_option in pc_builder_component.product.option %}
+				        				<div class="small">- {{ product_option.name }}: {{ product_option.value }}</div>
+				        				{% endfor %}
+				        			{% endif %}
+			        			{% endif %}
+			        		</div>
+			        		</div>
+		        		{% endfor %}
+	        		</div>
+        		{% endfor %}
+        	</div>
+        </td>
+        <td class="text-right">x&nbsp;1</td>
+        <td class="text-right">{{ pc_builder.amount }}</td>
+        <td class="text-center text-danger"><button type="button" onclick="pc_builder.remove('{{ pc_builder.key }}');" title="{{ button_remove }}" class="btn btn-danger btn-xs"><i class="fa fa-times"></i></button></td>
+      </tr>
+      {% endfor %}
+      ]]></add>
+    </operation>
+  </file>  
+  <!-- common/cart [END] -->
+  <!-- checkout/cart [START] -->
+  <file path="catalog/view/theme/journal3/template/checkout/cart.twig">
+    <operation>
+      <search><![CDATA[
+      {% for voucher in vouchers %}
+      ]]></search>
+      <add position="before"><![CDATA[
+      {% for pc_builder in pc_builders %}
+      <tr>
+        <td></td>
+        <td class="text-left">
+        	<h3 style="margin-top: 0px;">{{ text_pc_builder }}</h3>
+        	<div>
+        		{% for build in pc_builder.build %}
+        			<div style="margin-bottom: 15px;">
+		        		<h4>{{ build.name }}</h4>
+		        		{% for pc_builder_component in build.pc_builder_components %}
+			        		<div class="row" style="margin-bottom: 5px;">
+			        		<div class="col-sm-4">&middot; {{ pc_builder_component.name }}</div>
+			        		<div class="col-sm-8">
+			        			{% if pc_builder_component.product %}
+				        			<div>{{ pc_builder_component.product.name }}</div>
+				        			{% if pc_builder_component.product.option %}
+				        				{% for product_option in pc_builder_component.product.option %}
+				        				<div class="small">- {{ product_option.name }}: {{ product_option.value }}</div>
+				        				{% endfor %}
+				        			{% endif %}
+			        			{% endif %}
+			        		</div>
+			        		</div>
+		        		{% endfor %}
+	        		</div>
+        		{% endfor %}
+        	</div>
+      	</td>
+        <td class="text-left">{{ text_pc_builder }}</td>
+        <td class="text-left"><div class="input-group btn-block" style="max-width: 200px;">
+            <input type="text" name="" value="1" size="1" disabled="disabled" class="form-control" />
+            <span class="input-group-btn">
+            <button type="button" data-toggle="tooltip" title="{{ button_remove }}" class="btn btn-danger" onclick="pc_builder.remove('{{ pc_builder.key }}');"><i class="fa fa-times-circle"></i></button>
+            </span></div></td>
+        <td class="text-right">{{ pc_builder.amount }}</td>
+        <td class="text-right">{{ pc_builder.amount }}</td>
+      </tr>
+      {% endfor %}
+      ]]></add>
+    </operation>
+  </file>
+  <!-- checkout/cart [END] -->
+  <!-- checkout/confirm [START] -->
+  <file path="catalog/view/theme/journal3/template/checkout/confirm.twig">
+    <operation>
+      <search><![CDATA[
+      {% for voucher in vouchers %}
+      ]]></search>
+      <add position="before"><![CDATA[
+	    {% for pc_builder in pc_builders %}
+	    <tr>
+	      <td class="text-left">
+        	<h3 style="margin-top: 0px;">{{ text_pc_builder }}</h3>
+        	<div>
+        		{% for build in pc_builder.build %}
+        			<div style="margin-bottom: 15px;">
+		        		<h4>{{ build.name }}</h4>
+		        		{% for pc_builder_component in build.pc_builder_components %}
+			        		<div class="row" style="margin-bottom: 5px;">
+			        		<div class="col-sm-4">&middot; {{ pc_builder_component.name }}</div>
+			        		<div class="col-sm-8">
+			        			{% if pc_builder_component.product %}
+				        			<div>{{ pc_builder_component.product.name }}</div>
+				        			{% if pc_builder_component.product.option %}
+				        				{% for product_option in pc_builder_component.product.option %}
+				        				<div class="small">- {{ product_option.name }}: {{ product_option.value }}</div>
+				        				{% endfor %}
+				        			{% endif %}
+			        			{% endif %}
+			        		</div>
+			        		</div>
+		        		{% endfor %}
+	        		</div>
+        		{% endfor %}
+        	</div>
+	      </td>
+	      <td class="text-left">{{ text_pc_builder }}</td>
+	      <td class="text-right">1</td>
+	      <td class="text-right">{{ pc_builder.amount }}</td>
+	      <td class="text-right">{{ pc_builder.amount }}</td>
+	    </tr>
+	    {% endfor %}
+      ]]></add>
+    </operation>
+  </file>  
+  <!-- checkout/confirm [END] -->
+  <!-- mail/order_add [START] -->
+  <file path="catalog/view/theme/journal3/template/mail/order_add.twig">
+    <operation>
+      <search><![CDATA[
+      {% for voucher in vouchers %}
+      ]]></search>
+      <add position="before"><![CDATA[
+		{% for pc_builder in pc_builders %}
+		<tr>
+			<td style="font-size: 12px;	border-right: 1px solid #DDDDDD; border-bottom: 1px solid #DDDDDD; text-align: left; padding: 7px;">
+				<h3 style="margin-top: 0px;">{{ text_pc_builder }}</h3>
+				<div>
+					{% for build in pc_builder.pc_builder_categories %}
+						<div style="margin-bottom: 15px;">
+							<h4>{{ build.name }}</h4>
+							{% for pc_builder_component in build.pc_builder_components %}
+								<div class="row" style="margin-bottom: 5px;">
+								<div class="col-sm-4">{{ pc_builder_component.name }}</div>
+								<div class="col-sm-8">
+									{% if pc_builder_component.product %}
+										<div>{{ pc_builder_component.product.name }}</div>
+										{% if pc_builder_component.product.option %}
+											{% for product_option in pc_builder_component.product.option %}
+											<div class="small">- {{ product_option.name }}: {{ product_option.value }}</div>
+											{% endfor %}
+										{% endif %}
+									{% endif %}
+								</div>
+								</div>
+							{% endfor %}
+						</div>
+					{% endfor %}
+				</div>
+			</td>
+			<td style="font-size: 12px;	border-right: 1px solid #DDDDDD; border-bottom: 1px solid #DDDDDD; text-align: left; padding: 7px;"></td>
+			<td style="font-size: 12px;	border-right: 1px solid #DDDDDD; border-bottom: 1px solid #DDDDDD; text-align: right; padding: 7px;">1</td>
+			<td style="font-size: 12px;	border-right: 1px solid #DDDDDD; border-bottom: 1px solid #DDDDDD; text-align: right; padding: 7px;">{{ pc_builder.amount }}</td>
+			<td style="font-size: 12px;	border-right: 1px solid #DDDDDD; border-bottom: 1px solid #DDDDDD; text-align: right; padding: 7px;">{{ pc_builder.amount }}</td>
+		</tr>
+		{% endfor %}
+      ]]></add>
+    </operation>
+  </file>  
+	
+ <file path="catalog/view/theme/journal3/template/journal3/checkout/cart.twig">
+    <operation>
+      <search><![CDATA[
+        <tr v-for="(voucher, index) in vouchers">
+      ]]></search>
+      <add position="before"><![CDATA[
+	   {% for pc_builder in pc_builders %}
+	    <tr>
+	      <td class="text-left">
+        	<h3 style="margin-top: 0px;">{{ text_pc_builder }}</h3>
+        	<div>
+        		{% for build in pc_builder.build %}
+        			<div style="margin-bottom: 15px;">
+		        		<h4>{{ build.name }}</h4>
+		        		{% for pc_builder_component in build.pc_builder_components %}
+			        		<div class="row" style="margin-bottom: 5px;">
+			        		<div class="col-sm-4">&middot; {{ pc_builder_component.name }}</div>
+			        		<div class="col-sm-8">
+			        			{% if pc_builder_component.product %}
+				        			<div>{{ pc_builder_component.product.name }}</div>
+				        			{% if pc_builder_component.product.option %}
+				        				{% for product_option in pc_builder_component.product.option %}
+				        				<div class="small">- {{ product_option.name }}: {{ product_option.value }}</div>
+				        				{% endfor %}
+				        			{% endif %}
+			        			{% endif %}
+			        		</div>
+			        		</div>
+		        		{% endfor %}
+	        		</div>
+        		{% endfor %}
+        	</div>
+	      </td>
+	      <td class="text-left">{{ text_pc_builder }}</td>
+	      <td class="text-right">1</td>
+	      <td class="text-right">{{ pc_builder.amount }}</td>
+	      <td class="text-right">{{ pc_builder.amount }}</td>
+	    </tr>
+	    {% endfor %}
+      ]]></add>
+    </operation>
+  </file>  
+  <!-- mail/order_add [END] -->
+  <!-- mail/order_alert [START] -->
+  <file path="catalog/view/theme/journal3/template/mail/order_alert.twig">
+    <operation>
+      <search><![CDATA[
+      {% if vouchers %}
+      ]]></search>
+      <add position="before"><![CDATA[
+		{% if pc_builders %}
+		{% for pc_builder in pc_builders %}
+		1x {{ text_pc_builder }} {{ pc_builder.amount }}
+		{% for build in pc_builder.pc_builder_categories %}
+		{{ build.name }}
+		{% for pc_builder_component in build.pc_builder_components %}
+		{{ pc_builder_component.name }}
+		{% if pc_builder_component.product %}
+		{{ pc_builder_component.product.name }}
+		{% if pc_builder_component.product.option %}
+		{% for product_option in pc_builder_component.product.option %}
+		- {{ product_option.name }}: {{ product_option.value }}
+		{% endfor %}
+		{% endif %}
+		{% endif %}
+		{% endfor %}
+		{% endfor %}
+		{% endfor %}
+		{% endif %}
+      ]]></add>
+    </operation>
+  </file>  
+	
+	   <!-- common/cart [START] -->
+  <file path="catalog\controller\journal3\event\cart.php">
+  <operation>
+      <search><![CDATA[
+      $args['items_count'] = $this->cart->countProducts() + (isset($this->session->data['vouchers']) ? count($this->session->data['vouchers']) : 0);
+
+      ]]></search>
+      <add position="replace"><![CDATA[
+			$args['items_count'] = $this->cart->countProducts() + (isset($this->session->data['vouchers']) ? count($this->session->data['vouchers']) : 0) + (isset($this->session->data['pc_builders']) ? count($this->session->data['pc_builders']) : 0); 
+
+      ]]></add>
+    </operation>
+  </file>
+  <!-- mail/order_alert [END] -->
+<!-- CATALOG - THEME [END] -->
+<!-- SYSTEM - LIBRARY [START] -->
+  <!-- cart/cart [START] -->
+	 
+  <!-- cart/cart [END] -->
+<!-- SYSTEM - LIBRARY [END] -->
+</modification>

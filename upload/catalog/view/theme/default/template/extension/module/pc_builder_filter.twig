@@ -1,0 +1,88 @@
+<div class="panel panel-default">
+  <div class="panel-heading">{{ heading_title }}</div>
+  <div class="list-group"> 
+    <a class="list-group-item">{{ text_price }}</a>
+    <div class="list-group-item">
+      <div id="filter-pc-builder-price" class="clearfix">
+        <div class="pull-left"><input type="number" name="min_price" size="12" class="sliderValue" data-index="0" value="{{ min_price }}" /></div>
+        <div class="pull-right"><input type="number" name="max_price" size="12" class="sliderValue" data-index="1" value="{{ max_price }}" /></div>
+      </div>
+      <div id="slider" style="margin-top: 15px;"></div>
+    </div>
+    {% if categories %}
+    <a class="list-group-item">{{ text_category }}</a>
+    <div class="list-group-item">
+      <div id="filter-pc-builder-category">
+        {% for category in categories %}
+        <div class="checkbox">
+          <label>
+            {% if category.category_id in selected_category %}
+            <input type="checkbox" name="category[]" value="{{ category.category_id }}" checked="checked" />
+            {{ category.name }}
+            {% else %}
+            <input type="checkbox" name="category[]" value="{{ category.category_id }}" />
+            {{ category.name }}
+            {% endif %}
+          </label>
+        </div>
+        {% endfor %}
+      </div>
+    </div>
+    {% endif %}
+    {% for filter_group in filter_groups %} <a class="list-group-item">{{ filter_group.name }}</a>
+    <div class="list-group-item">
+      <div id="filter-group{{ filter_group.filter_group_id }}">{% for filter in filter_group.filter %}
+        <div class="checkbox">
+          <label>{% if filter.filter_id in selected_filter %}
+            <input type="checkbox" name="filter[]" value="{{ filter.filter_id }}" checked="checked" />
+            {{ filter.name }}
+            {% else %}
+            <input type="checkbox" name="filter[]" value="{{ filter.filter_id }}" />
+            {{ filter.name }}
+            {% endif %}</label>
+        </div>
+        {% endfor %}</div>
+    </div>
+    {% endfor %}</div>
+  <div class="panel-footer text-right">
+    <button type="button" id="button-pc-builder-filter" class="btn btn-primary">{{ button_filter }}</button>
+  </div>
+</div>
+<script type="text/javascript"><!--
+$('#button-pc-builder-filter').on('click', function() {
+	min_price = $('input[name=\'min_price\']').val();
+	max_price = $('input[name=\'max_price\']').val();
+
+	category = [];
+
+	$('input[name^=\'category\']:checked').each(function(element) {
+		category.push(this.value);
+	});
+
+	filter = [];
+
+	$('input[name^=\'filter\']:checked').each(function(element) {
+		filter.push(this.value);
+	});
+
+	location = '{{ action }}&filter=' + filter.join(',') + '&category=' + category.join(',') + '&min_price=' + min_price + '&max_price=' + max_price;
+});
+//--></script> 
+<script type="text/javascript"><!--
+$("#slider").slider({
+    min: 0,
+    max: 10000,
+    step: 10,
+    values: [{{ min_price }}, {{ max_price }}],
+    slide: function(event, ui) {
+        for (var i = 0; i < ui.values.length; ++i) {
+            $("input.sliderValue[data-index=" + i + "]").val(ui.values[i]);
+        }
+    }
+});
+
+$("input.sliderValue").change(function() {
+    var $this = $(this);
+    $("#slider").slider("values", $this.data("index"), $this.val());
+});
+//--></script> 

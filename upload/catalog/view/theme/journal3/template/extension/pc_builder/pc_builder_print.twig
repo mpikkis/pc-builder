@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<!--[if IE]><![endif]-->
+<!--[if IE 8 ]><html dir="{{ direction }}" lang="{{ lang }}" class="ie8"><![endif]-->
+<!--[if IE 9 ]><html dir="{{ direction }}" lang="{{ lang }}" class="ie9"><![endif]-->
+<!--[if (gt IE 9)|!(IE)]><!-->
+<html dir="{{ direction }}" lang="{{ lang }}">
+<!DOCTYPE html>
+<head>
+<meta charset="UTF-8" />
+<title>{{ text_print }}</title>
+<script type="text/javascript" src="catalog/view/javascript/jquery/jquery-2.1.1.min.js"></script>
+<link href="catalog/view/javascript/font-awesome/css/font-awesome.min.css" type="text/css" rel="stylesheet" />
+<link type="text/css" href="catalog/view/theme/default/stylesheet/pc_builder_screen.css" rel="stylesheet" media="screen" />
+<link type="text/css" href="catalog/view/theme/default/stylesheet/pc_builder_print.css" rel="stylesheet" media="print" />
+</head>
+<body>
+<div id="extension-pc-builder-pc-builder" class="main">
+	<div class="printarea pc-builder-container">
+		<div class="printarea-header">
+			<div class="logo"><img src="{{ logo }}" /></div>
+			<div class="company">
+				<div class="name"><h1>{{ store }}</h1></div>
+				<div class="address">{{ text_address}}: {{ address }}</div>
+				<div class="telephone">{{ text_telephone }}: {{ telephone }}</div>
+				<div class="email">{{ text_email }}: {{ email }}</div>
+				<div class="website">{{ text_website }}: <a href="{{ website }}">{{ website }}</a></div>
+			</div>
+		</div>
+		<div class="separator-horizontal">&nbsp;</div>
+		<div style="margin-top: 15px; margin-bottom: 30px;"><strong>{{ text_total_weight }}:</strong> {{ total_weight }}; <strong>{{ text_total_amount }}:</strong> {{ total_amount }}</div>
+		<div class="printarea-body">
+    	{% if pc_builder_categories %}
+    	<div>
+    		{% for pc_builder_category in pc_builder_categories %}
+    		<div class="pc-builder-category-container">
+    			<h4>{{ pc_builder_category.name }}</h4>
+    			{% if pc_builder_category.pc_builder_components %}
+    			<div>
+    				{% for pc_builder_component in pc_builder_category.pc_builder_components %}
+    				<div class="pc-builder-component-container">
+    					<div id="pc-builder-component-image-{{ pc_builder_category.pc_builder_category_id }}-{{ pc_builder_component.pc_builder_component_id }}" class="component-image">{% if pc_builder_component.product %}<img src="{{ pc_builder_component.product.image }}" class="thumbnail" />{% else %}<img src="{{ pc_builder_component.thumb }}" class="thumbnail" />{% endif %}</div>
+    					<div id="pc-builder-component-name-{{ pc_builder_category.pc_builder_category_id }}-{{ pc_builder_component.pc_builder_component_id }}" class="component-name">{{ pc_builder_component.name }} {% if pc_builder_component.required %}<span class="text-danger">*</span>{% endif %}</div>
+    					<div id="pc-builder-component-product-{{ pc_builder_category.pc_builder_category_id }}-{{ pc_builder_component.pc_builder_component_id }}" class="component-product">
+    					{% if pc_builder_component.product %}
+    						{{ pc_builder_component.product.name }}
+    						{% if pc_builder_component.product.option %}
+								<div>
+								  <div class="small">
+								    {% for option in pc_builder_component.product.option %}
+								    - {{ option.name }}: {{ option.value }}<br />
+								    {% endfor %}
+								  </div>
+								</div>
+    						{% endif %}
+    					{% endif %}
+    					</div>
+    					{% if pc_builder_component.product %}<div id="pc-builder-component-price-{{ pc_builder_category.pc_builder_category_id }}-{{ pc_builder_component.pc_builder_component_id }}" class="component-price">{{ pc_builder_component.product.price }}</div>{% endif %}
+  					</div>
+    				{% endfor %}
+    			</div>
+    			{% endif %}
+    		</div>
+    		{% endfor %}
+    	</div>
+    	{% endif %}
+		</div>
+	</div>
+</div>
+<script type="text/javascript"><!--
+window.print()
+//--></script>
+</body>
+</html>

@@ -1,0 +1,130 @@
+/* PC Builder Styles */
+#extension-pc-builder-pc-builder {
+
+}
+#extension-pc-builder-pc-builder .pc-builder-container {
+	border: 1px solid #dadada;
+	padding: 15px 15px;
+}
+#extension-pc-builder-pc-builder .pc-builder-container h1 {
+	margin: 0px 0px 30px 0px;
+	padding: 0 0;
+}
+#extension-pc-builder-pc-builder .pc-builder-container #total-container {
+	margin-top: 15px;
+}
+#extension-pc-builder-pc-builder .pc-builder-container #total-container .total-amount {
+	border: 2px solid #df5c39;
+	border-radius:  5px;
+	padding: 0px 10px;
+	float: right;
+	margin-right: 15px;
+	box-shadow: inset 0 1px 0 rgba(255,255,255,.2), 0 1px 2px rgba(0,0,0,.05);
+}
+#extension-pc-builder-pc-builder .pc-builder-container #total-container .total-weight {
+	border: 2px solid #df5c39;
+	border-radius:  5px;
+	padding:  0px 10px;
+	float: right;
+	box-shadow: inset 0 1px 0 rgba(255,255,255,.2), 0 1px 2px rgba(0,0,0,.05);
+}
+#extension-pc-builder-pc-builder .pc-builder-container .pc-builder-category-container {
+	margin: 0px 0px 10px 0px;
+}
+#extension-pc-builder-pc-builder .pc-builder-container .pc-builder-category-container h4 {
+	margin: 0px 0px 10px 0px;
+	padding: 0 0;
+}
+#extension-pc-builder-pc-builder .pc-builder-container .pc-builder-category-container .pc-builder-component-container {
+	border: 1px solid #dadada;
+	background-color: #fafafa;
+	padding: 10px 15px;
+	margin-bottom: 5px;
+}
+#extension-pc-builder-pc-builder .pc-builder-container .pc-builder-category-container .pc-builder-component-container.required-component {
+	border: 1px solid #da4f49;
+	background-color: #ddd3d3;
+}
+#extension-pc-builder-pc-builder .pc-builder-container .pc-builder-category-container .pc-builder-component-container::after {
+  content: "";
+  clear: both;
+  display: table;
+}
+#extension-pc-builder-pc-builder .pc-builder-container .pc-builder-category-container .pc-builder-component-container .component-image {
+	float: left;
+}
+#extension-pc-builder-pc-builder .pc-builder-container .pc-builder-category-container .pc-builder-component-container .component-image .thumbnail {
+	margin-bottom: 0px;
+}
+#extension-pc-builder-pc-builder .pc-builder-container .pc-builder-category-container .pc-builder-component-container .component-name {
+	float: left;
+	padding: 10px 16px;
+	font-size: 15px;
+	font-weight: bold;
+}
+#extension-pc-builder-pc-builder .pc-builder-container .pc-builder-category-container .pc-builder-component-container .component-product {
+	float: left;
+	padding: 10px 16px;
+	font-size: 15px;
+}
+#extension-pc-builder-pc-builder .pc-builder-container .pc-builder-category-container .pc-builder-component-container .component-price {
+	float: right;
+	padding: 10px 16px;
+	font-size: 15px;
+	font-weight: bold;
+}
+#extension-pc-builder-pc-builder .pc-builder-container .pc-builder-category-container .pc-builder-component-container .component-choose {
+	float: right;
+}
+
+/* PC Builder Build Styles */
+#extension-pc-builder-pc-builder-build {
+
+}
+#extension-pc-builder-pc-builder-build .pc-builder-category-container {
+
+}
+
+/* PC Builder Journal 3 */
+#pc-builder-journal3 .product-thumb {
+	border: none;
+	padding: 10px 10px;
+}
+#pc-builder-journal3 .product-thumb .caption .name {
+	border-top: 1px solid #dddddd;
+	border-bottom: 1px solid #dddddd;
+	min-height: 48px;
+}
+#pc-builder-journal3 .product-thumb .caption .price {
+	padding-top: 5px;
+	padding-bottom: 5px;
+}
+.pc-builder-journal3 .thumbnails {
+	overflow: auto;
+	clear: both;
+	list-style: none;
+	padding: 0;
+	margin: 0;
+}
+.pc-builder-journal3 .thumbnails > li {
+	margin-left: 20px;
+}
+.pc-builder-journal3 .thumbnails {
+	margin-left: -20px;
+}
+.pc-builder-journal3 .thumbnails > img {
+	width: 100%;
+}
+.pc-builder-journal3 .image-additional a {
+	margin-bottom: 20px;
+	padding: 5px;
+	display: block;
+	border: 1px solid #ddd;
+}
+.pc-builder-journal3 .image-additional {
+	max-width: 78px;
+}
+.pc-builder-journal3 .thumbnails .image-additional {
+	float: left;
+	margin-left: 20px;
+}
